@@ -1,12 +1,9 @@
 import fs from "fs-extra";
 import path from "path";
 import os from "os";
-import { exec } from "child_process";
-import { promisify } from "util";
 import { databaseService, HostGroup, HostEntry } from "./database";
 import log from "electron-log/main";
-
-const execAsync = promisify(exec);
+import sudo from "sudo-prompt";
 
 export interface BackupInfo {
   id: string;
@@ -24,9 +21,7 @@ export class HostManagerService {
   private hostFilePath: string;
   private backupDir: string;
   private dataDir: string;
-  private validatedPassword: string | null = null;
-  private passwordValidTime: number = 0;
-  private readonly PASSWORD_VALID_DURATION = 5 * 60 * 1000; // 5分钟有效期
+  private sudoOptions: any;
 
   constructor() {
     this.hostFilePath = this.getSystemHostsPath();
@@ -39,6 +34,11 @@ export class HostManagerService {
     // 确保数据目录和备份目录存在
     fs.ensureDirSync(this.dataDir);
     fs.ensureDirSync(this.backupDir);
+
+    // 配置 sudo-prompt 选项
+    this.sudoOptions = {
+      name: "Host Genius",
+    };
   }
 
   private getSystemHostsPath(): string {
@@ -58,127 +58,112 @@ export class HostManagerService {
     }
   }
 
-  // 验证管理员密码
-  async validateAdminPassword(password: string): Promise<AdminAuthResult> {
-    log.info("Validating admin password");
-    if (process.platform === "win32") {
-      return await this.validateWindowsPassword(password);
-    } else {
-      log.info("valid");
-      return await this.validateUnixPassword(password);
-    }
-  }
+  // 验证管理员密码 - 使用 sudo-prompt
+  async validateAdminPassword(password?: string): Promise<AdminAuthResult> {
+    log.info("Validating admin password using sudo-prompt");
 
-  private async validateWindowsPassword(
-    password: string,
-  ): Promise<AdminAuthResult> {
     try {
-      // Windows: 使用PowerShell验证当前用户是否为管理员
-      const { stdout } = await execAsync(
-        'powershell -Command "([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)"',
-      );
+      // 使用 sudo-prompt 测试管理员权限
+      const testCommand =
+        process.platform === "win32" ? "echo test" : "echo test";
 
-      if (stdout.trim() === "True") {
-        this.validatedPassword = password;
-        this.passwordValidTime = Date.now();
-        return { success: true, message: "管理员权限验证成功" };
-      } else {
-        return { success: false, message: "当前用户不具备管理员权限" };
-      }
+      await this.execWithSudo([testCommand]);
+
+      return {
+        success: true,
+        message: "管理员权限验证成功",
+      };
     } catch (error) {
-      log.error("Windows admin validation failed:", error);
-      return { success: false, message: "权限验证失败" };
+      log.error("Admin validation failed:", error);
+      return {
+        success: false,
+        message: "权限验证失败或用户取消授权",
+      };
     }
   }
 
-  private async validateUnixPassword(
-    password: string,
-  ): Promise<AdminAuthResult> {
-    try {
-      // Unix: 使用sudo -S验证密码
-      const child = exec("sudo -S whoami", { timeout: 10000 });
-
-      return new Promise((resolve) => {
-        let output = "";
-        let errorOutput = "";
-
-        child.stdout?.on("data", (data) => {
-          output += data.toString();
-        });
-
-        child.stderr?.on("data", (data) => {
-          errorOutput += data.toString();
-          // 如果检测到密码提示，发送密码
-          if (
-            data.toString().includes("Password:") ||
-            data.toString().includes("password")
-          ) {
-            child.stdin?.write(password + "\n");
-          }
-        });
-
-        child.on("close", (code) => {
-          if (code === 0 && output.includes("root")) {
-            this.validatedPassword = password;
-            this.passwordValidTime = Date.now();
-            resolve({ success: true, message: "管理员权限验证成功" });
+  // 使用 sudo-prompt 执行命令的辅助方法
+  private async execWithSudo(command: string[]): Promise<string> {
+    return new Promise((resolve, reject) => {
+      sudo.exec(
+        command.join(" "),
+        this.sudoOptions,
+        (error, stdout, stderr) => {
+          if (error) {
+            log.error("Sudo exec error:", error);
+            reject(error);
           } else {
-            resolve({ success: false, message: "密码错误或权限不足" });
+            resolve(stdout?.toString() || "");
           }
-        });
-
-        child.on("error", (error) => {
-          log.error("Unix admin validation failed:", error);
-          resolve({ success: false, message: "权限验证失败" });
-        });
-
-        // 发送密码
-        child.stdin?.write(password + "\n");
-      });
-    } catch (error) {
-      log.error("Unix admin validation failed:", error);
-      return { success: false, message: "权限验证失败" };
-    }
+        },
+      );
+    });
   }
 
-  // 检查密码是否仍然有效
-  private isPasswordValid(): boolean {
-    if (!this.validatedPassword) return false;
-
-    const now = Date.now();
-    return now - this.passwordValidTime < this.PASSWORD_VALID_DURATION;
-  }
-
-  // 清除已验证的密码
-  clearValidatedPassword(): void {
-    this.validatedPassword = null;
-    this.passwordValidTime = 0;
-  }
-
-  // 检查是否有管理员权限
-  async checkPermissions(): Promise<boolean> {
-    let result = false
+  // 直接读取文件，无需sudo权限
+  private async readFileWithSudo(filePath: string): Promise<string> {
     try {
-      await fs.access(this.hostFilePath, fs.constants.R_OK | fs.constants.W_OK);
-      result = true;
-    } catch (err) {
-      log.error(err)
+      return await fs.readFile(filePath, "utf-8");
+    } catch (error) {
+      log.error("Failed to read file:", error);
+      throw new Error("无法读取文件，请检查文件路径和权限");
     }
-    log.info("Checking permissions for hosts file:", this.hostFilePath,result);
-    return result;
   }
 
-  // 请求管理员权限 - 已废弃，改用UI方式
-  async requestAdminPermissions(): Promise<boolean> {
-    log.warn(
-      "requestAdminPermissions is deprecated, use validateAdminPassword instead",
-    );
-    return false;
+  // 使用 sudo-prompt 写入文件并刷新DNS
+  private async writeFileWithSudo(
+    filePath: string,
+    content: string,
+  ): Promise<void> {
+    try {
+      let tempFile: string;
+      let commands: string[] = [];
+
+      if (process.platform === "win32") {
+        // Windows 处理
+        tempFile = path.join(process.env.TEMP || "C:\\temp", "hosts_temp.txt");
+        await fs.writeFile(tempFile, content, "utf-8");
+        commands = [
+          `powershell -Command "Copy-Item -Path '${tempFile}' -Destination '${filePath}' -Force"`,
+          "ipconfig /flushdns",
+        ];
+      } else {
+        // macOS 和 Linux 处理
+        tempFile = "/tmp/hosts_temp.txt";
+        await fs.writeFile(tempFile, content, "utf-8");
+
+        if (process.platform === "darwin") {
+          commands = [
+            `cp "${tempFile}" "${filePath}"`,
+            "dscacheutil -flushcache",
+          ];
+        } else {
+          // Linux
+          commands = [
+            `cp "${tempFile}" "${filePath}"`,
+            "systemctl restart systemd-resolved",
+          ];
+        }
+      }
+
+      // 合并所有命令，一次性执行
+      const combinedCommand = commands.join(" && ");
+      await this.execWithSudo([combinedCommand]);
+
+      // 清理临时文件
+      await fs.remove(tempFile);
+
+      log.info("系统hosts文件更新和DNS缓存刷新成功");
+    } catch (error) {
+      log.error("Failed to write file with sudo:", error);
+      throw new Error("无法写入文件，请确认管理员权限");
+    }
   }
 
   // 读取系统hosts文件
   async readSystemHosts(): Promise<string> {
     try {
+      // 直接读取hosts文件，通常读取不需要管理员权限
       const content = await fs.readFile(this.hostFilePath, "utf-8");
 
       // 更新数据库中的系统hosts
@@ -186,11 +171,11 @@ export class HostManagerService {
       if (systemGroup && systemGroup.content !== content) {
         databaseService.updateGroup(systemGroup.id, { content });
       }
-      log.info("host:",content);
 
+      log.info("Successfully read hosts file, length:", content.length);
       return content;
     } catch (error) {
-      console.error("读取系统hosts文件失败:", error);
+      log.error("Failed to read system hosts file:", error);
       throw new Error("无法读取系统hosts文件，请检查权限");
     }
   }
@@ -223,104 +208,13 @@ export class HostManagerService {
       // 先创建备份
       await this.createBackup();
 
-      // 写入新内容
-      if (process.platform === "win32") {
-        await this.writeHostsWindows(content);
-      } else {
-        await this.writeHostsUnix(content);
-      }
+      // 写入新内容并刷新DNS（合并操作）
+      await this.writeFileWithSudo(this.hostFilePath, content);
 
-      // 刷新DNS缓存
-      await this.flushDNS();
-
-      console.log("系统hosts文件更新成功");
+      log.info("系统hosts文件更新成功");
     } catch (error) {
-      console.error("写入系统hosts文件失败:", error);
+      log.error("写入系统hosts文件失败:", error);
       throw new Error("写入hosts文件失败，请检查管理员权限");
-    }
-  }
-
-  private async writeHostsWindows(content: string): Promise<void> {
-    if (!this.isPasswordValid()) {
-      throw new Error("管理员权限已过期，请重新验证");
-    }
-
-    // Windows 需要特殊处理权限
-    const tempFile = path.join(
-      process.env.TEMP || "C:\\temp",
-      "hosts_temp.txt",
-    );
-    await fs.writeFile(tempFile, content, "utf-8");
-
-    try {
-      // 使用RunAs以管理员权限执行
-      await execAsync(
-        `powershell -Command "Start-Process copy -ArgumentList '\\"${tempFile}\\" \\"${this.hostFilePath}\\"' -Verb RunAs -Wait"`,
-      );
-    } finally {
-      await fs.remove(tempFile);
-    }
-  }
-
-  private async writeHostsUnix(content: string): Promise<void> {
-    if (!this.isPasswordValid()) {
-      throw new Error("管理员权限已过期，请重新验证");
-    }
-
-    // Unix 系统使用已验证的密码
-    const tempFile = "/tmp/hosts_temp.txt";
-    await fs.writeFile(tempFile, content, "utf-8");
-
-    try {
-      const child = exec(`sudo -S cp "${tempFile}" "${this.hostFilePath}"`);
-
-      return new Promise((resolve, reject) => {
-        child.stderr?.on("data", (data) => {
-          if (
-            data.toString().includes("Password:") ||
-            data.toString().includes("password")
-          ) {
-            child.stdin?.write(this.validatedPassword + "\n");
-          }
-        });
-
-        child.on("close", (code) => {
-          if (code === 0) {
-            resolve();
-          } else {
-            reject(new Error("写入hosts文件失败"));
-          }
-        });
-
-        child.on("error", (error) => {
-          reject(error);
-        });
-
-        // 发送密码
-        child.stdin?.write(this.validatedPassword + "\n");
-      });
-    } finally {
-      await fs.remove(tempFile);
-    }
-  }
-
-  // 刷新DNS缓存
-  private async flushDNS(): Promise<void> {
-    try {
-      switch (process.platform) {
-        case "win32":
-          await execAsync("ipconfig /flushdns");
-          break;
-        case "darwin":
-          await execAsync("sudo dscacheutil -flushcache");
-          break;
-        case "linux":
-          await execAsync("sudo systemctl restart systemd-resolved");
-          break;
-      }
-    } catch (error) {
-      console.warn("刷新DNS缓存失败:", error);
-      // 不抛出错误，因为这不是关键操作
     }
   }
 
@@ -352,7 +246,7 @@ export class HostManagerService {
   }
 
   // 更新分组
-  updateGroup(
+  async updateGroup(
     id: string,
     data: {
       name?: string;
@@ -360,8 +254,20 @@ export class HostManagerService {
       content?: string;
       enabled?: boolean;
     },
-  ): boolean {
-    return databaseService.updateGroup(id, data);
+  ): Promise<boolean> {
+    //合并hosts内容ssss
+    // if (data.content) {
+    // }
+    let result = false;
+    databaseService.updateGroup(id, data);
+
+    try {
+      await this.applyHosts();
+      result = true;
+    } catch (error) {
+      log.error("应用分组更新到系统hosts失败:", error);
+    }
+    return result;
   }
 
   // 删除分组

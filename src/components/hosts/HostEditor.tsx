@@ -11,6 +11,11 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -23,7 +28,18 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { toast } from "sonner";
-import { Save, Plus, Trash2, FileText, List, ArrowLeft } from "lucide-react";
+import {
+  Save,
+  Plus,
+  Trash2,
+  FileText,
+  List,
+  ArrowLeft,
+  ChevronDown,
+  ChevronUp,
+  Maximize2,
+  Minimize2,
+} from "lucide-react";
 import { HostGroup, HostEntry } from "../../preload";
 import { useHosts } from "../../hooks/useHosts";
 
@@ -34,7 +50,8 @@ interface HostEditorProps {
 }
 
 export function HostEditor({ group, onSave, onCancel }: HostEditorProps) {
-  const { createGroup, updateGroup, parseHosts, formatHosts } = useHosts();
+  const { createGroup, updateGroup, parseHosts, formatHosts, readSystemHosts } =
+    useHosts();
 
   const [formData, setFormData] = useState({
     name: "",
@@ -46,8 +63,11 @@ export function HostEditor({ group, onSave, onCancel }: HostEditorProps) {
   const [entries, setEntries] = useState<HostEntry[]>([]);
   const [activeTab, setActiveTab] = useState("text");
   const [loading, setLoading] = useState(false);
+  const [isBasicInfoOpen, setIsBasicInfoOpen] = useState(true);
+  const [isFullscreen, setIsFullscreen] = useState(false);
 
   useEffect(() => {
+    console.log("编辑分组:", group);
     if (group) {
       setFormData({
         name: group.name,
@@ -59,6 +79,17 @@ export function HostEditor({ group, onSave, onCancel }: HostEditorProps) {
     }
   }, [group]);
 
+  useEffect(() => {
+    readSystemHosts()
+      .then((result: any) => {
+        console.log("读取系统hosts内容:", result);
+        formData.content = result;
+      })
+      .catch((err: any) => {
+        console.error("读取系统hosts失败:", err);
+        toast.error("读取系统hosts失败");
+      });
+  }, []);
   const loadEntries = async (content: string) => {
     try {
       const parsed = await parseHosts(content);
@@ -128,6 +159,176 @@ export function HostEditor({ group, onSave, onCancel }: HostEditorProps) {
     }
   };
 
+  const toggleFullscreen = () => {
+    setIsFullscreen(!isFullscreen);
+  };
+
+  // 全屏编辑组件
+  const FullscreenEditor = () => (
+    <div className="bg-background fixed inset-0 z-50 flex flex-col">
+      <div className="bg-background flex-shrink-0 border-b p-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-4">
+            <h4 className="text-xl font-bold">
+              全屏编辑 - {group ? group.name : "新建分组"}
+            </h4>
+          </div>
+          <div className="space-x-2">
+            <Button variant="outline" onClick={toggleFullscreen}>
+              <Minimize2 className="mr-2 h-4 w-4" />
+              退出全屏
+            </Button>
+            <Button onClick={handleSave} disabled={loading}>
+              <Save className="mr-2 h-4 w-4" />
+              {loading ? "保存中..." : "保存"}
+            </Button>
+          </div>
+        </div>
+      </div>
+
+      <div className="flex-1 overflow-hidden p-4">
+        <Tabs
+          value={activeTab}
+          onValueChange={setActiveTab}
+          className="flex h-full flex-col"
+        >
+          <TabsList className="grid w-full max-w-md flex-shrink-0 grid-cols-2">
+            <TabsTrigger value="text" className="flex items-center space-x-2">
+              <FileText className="h-4 w-4" />
+              <span>文本编辑</span>
+            </TabsTrigger>
+            <TabsTrigger value="table" className="flex items-center space-x-2">
+              <List className="h-4 w-4" />
+              <span>表格编辑</span>
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent
+            value="text"
+            className="mt-4 flex flex-1 flex-col space-y-4"
+          >
+            <div className="flex flex-1 flex-col space-y-2">
+              <div className="flex items-center justify-between">
+                <Label htmlFor="fullscreen-content">Hosts 内容</Label>
+                <div className="text-muted-foreground flex items-center space-x-4 text-sm">
+                  <span>共 {entries.length} 条有效记录</span>
+                  <Separator orientation="vertical" className="h-4" />
+                  <span>启用 {entries.filter((e) => e.enabled).length} 条</span>
+                </div>
+              </div>
+              <Textarea
+                id="fullscreen-content"
+                placeholder="127.0.0.1 localhost&#10;192.168.1.100 api.example.com # 开发环境"
+                value={formData.content}
+                onChange={(e) => handleContentChange(e.target.value)}
+                className="flex-1 resize-none font-mono text-sm"
+              />
+            </div>
+          </TabsContent>
+
+          <TabsContent
+            value="table"
+            className="mt-4 flex flex-1 flex-col space-y-4"
+          >
+            <div className="flex flex-shrink-0 items-center justify-between">
+              <div className="text-muted-foreground flex items-center space-x-4 text-sm">
+                <span>共 {entries.length} 条记录</span>
+              </div>
+              <Button onClick={addEntry} size="sm">
+                <Plus className="mr-2 h-4 w-4" />
+                添加条目
+              </Button>
+            </div>
+
+            <div className="flex-1 overflow-auto rounded-md border">
+              <Table>
+                <TableHeader className="bg-background sticky top-0 z-10">
+                  <TableRow>
+                    <TableHead className="w-[100px]">状态</TableHead>
+                    <TableHead>IP地址</TableHead>
+                    <TableHead>域名</TableHead>
+                    <TableHead>备注</TableHead>
+                    <TableHead className="w-[100px]">操作</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {entries.map((entry, index) => (
+                    <TableRow key={index}>
+                      <TableCell>
+                        <Switch
+                          checked={entry.enabled}
+                          onCheckedChange={(enabled) =>
+                            updateEntry(index, { enabled })
+                          }
+                          size="sm"
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <Input
+                          value={entry.ip}
+                          onChange={(e) =>
+                            updateEntry(index, { ip: e.target.value })
+                          }
+                          placeholder="127.0.0.1"
+                          className="font-mono text-sm"
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <Input
+                          value={entry.domain}
+                          onChange={(e) =>
+                            updateEntry(index, { domain: e.target.value })
+                          }
+                          placeholder="example.com"
+                          className="font-mono text-sm"
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <Input
+                          value={entry.comment || ""}
+                          onChange={(e) =>
+                            updateEntry(index, { comment: e.target.value })
+                          }
+                          placeholder="可选备注"
+                          className="text-sm"
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => removeEntry(index)}
+                          className="text-destructive hover:text-destructive"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+
+            {entries.length === 0 && (
+              <div className="text-muted-foreground py-8 text-center">
+                <p>暂无hosts条目</p>
+                <Button onClick={addEntry} variant="outline" className="mt-2">
+                  <Plus className="mr-2 h-4 w-4" />
+                  添加第一条记录
+                </Button>
+              </div>
+            )}
+          </TabsContent>
+        </Tabs>
+      </div>
+    </div>
+  );
+
+  // 如果是全屏模式，显示全屏编辑器
+  if (isFullscreen) {
+    return <FullscreenEditor />;
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -137,12 +338,12 @@ export function HostEditor({ group, onSave, onCancel }: HostEditorProps) {
             返回
           </Button>
           <div>
-            <h2 className="text-2xl font-bold">
+            <h4 className="text-2xl font-bold">
               {group ? "编辑分组" : "新建分组"}
-            </h2>
-            <p className="text-muted-foreground">
+            </h4>
+            {/* <p className="text-muted-foreground">
               {group ? `编辑 "${group.name}" 分组配置` : "创建新的hosts分组"}
-            </p>
+            </p> */}
           </div>
         </div>
         <div className="space-x-2">
@@ -156,61 +357,81 @@ export function HostEditor({ group, onSave, onCancel }: HostEditorProps) {
         </div>
       </div>
 
+      <Collapsible open={isBasicInfoOpen} onOpenChange={setIsBasicInfoOpen}>
+        <Card>
+          <CollapsibleTrigger asChild>
+            <CardHeader className="hover:bg-accent/50 cursor-pointer transition-colors">
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle>基本信息</CardTitle>
+                  {/* <CardDescription>配置分组的基本信息</CardDescription> */}
+                </div>
+                {isBasicInfoOpen ? (
+                  <ChevronUp className="h-4 w-4" />
+                ) : (
+                  <ChevronDown className="h-4 w-4" />
+                )}
+              </div>
+            </CardHeader>
+          </CollapsibleTrigger>
+          <CollapsibleContent>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="name">分组名称 *</Label>
+                  <Input
+                    id="name"
+                    placeholder="输入分组名称"
+                    value={formData.name}
+                    onChange={(e) =>
+                      setFormData((prev) => ({ ...prev, name: e.target.value }))
+                    }
+                    disabled={group?.isSystem}
+                  />
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Switch
+                    id="enabled"
+                    checked={formData.enabled}
+                    onCheckedChange={(enabled) =>
+                      setFormData((prev) => ({ ...prev, enabled }))
+                    }
+                    disabled={group?.isSystem}
+                  />
+                  <Label htmlFor="enabled">启用分组</Label>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="description">描述</Label>
+                <Input
+                  id="description"
+                  placeholder="输入分组描述（可选）"
+                  value={formData.description}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      description: e.target.value,
+                    }))
+                  }
+                />
+              </div>
+            </CardContent>
+          </CollapsibleContent>
+        </Card>
+      </Collapsible>
+
       <Card>
         <CardHeader>
-          <CardTitle>基本信息</CardTitle>
-          <CardDescription>配置分组的基本信息</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-            <div className="space-y-2">
-              <Label htmlFor="name">分组名称 *</Label>
-              <Input
-                id="name"
-                placeholder="输入分组名称"
-                value={formData.name}
-                onChange={(e) =>
-                  setFormData((prev) => ({ ...prev, name: e.target.value }))
-                }
-                disabled={group?.isSystem}
-              />
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle>Hosts 配置</CardTitle>
             </div>
-            <div className="flex items-center space-x-2">
-              <Switch
-                id="enabled"
-                checked={formData.enabled}
-                onCheckedChange={(enabled) =>
-                  setFormData((prev) => ({ ...prev, enabled }))
-                }
-                disabled={group?.isSystem}
-              />
-              <Label htmlFor="enabled">启用分组</Label>
-            </div>
+            <Button variant="outline" size="sm" onClick={toggleFullscreen}>
+              <Maximize2 className="mr-2 h-4 w-4" />
+              全屏编辑
+            </Button>
           </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="description">描述</Label>
-            <Input
-              id="description"
-              placeholder="输入分组描述（可选）"
-              value={formData.description}
-              onChange={(e) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  description: e.target.value,
-                }))
-              }
-            />
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Hosts 配置</CardTitle>
-          <CardDescription>
-            配置此分组的hosts条目，支持文本编辑和表格编辑两种模式
-          </CardDescription>
         </CardHeader>
         <CardContent>
           <Tabs value={activeTab} onValueChange={setActiveTab}>
@@ -236,7 +457,7 @@ export function HostEditor({ group, onSave, onCancel }: HostEditorProps) {
                   placeholder="127.0.0.1 localhost&#10;192.168.1.100 api.example.com # 开发环境"
                   value={formData.content}
                   onChange={(e) => handleContentChange(e.target.value)}
-                  className="min-h-[300px] font-mono text-sm"
+                  className="h-[400px] resize-none overflow-auto font-mono text-sm"
                 />
               </div>
 
@@ -258,9 +479,9 @@ export function HostEditor({ group, onSave, onCancel }: HostEditorProps) {
                 </Button>
               </div>
 
-              <div className="rounded-md border">
+              <div className="max-h-[400px] overflow-auto rounded-md border">
                 <Table>
-                  <TableHeader>
+                  <TableHeader className="bg-background sticky top-0 z-10">
                     <TableRow>
                       <TableHead className="w-[100px]">状态</TableHead>
                       <TableHead>IP地址</TableHead>

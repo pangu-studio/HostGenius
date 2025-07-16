@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { toast } from "sonner";
 import { HostGroup, HostEntry, BackupInfo } from "../preload";
+import { read } from "fs";
 
 export function useHosts() {
   const [groups, setGroups] = useState<HostGroup[]>([]);
@@ -12,6 +13,18 @@ export function useHosts() {
     (() => Promise<void>) | null
   >(null);
 
+  const [hostEntry, setHostEntry] = useState<HostEntry[]>([]);
+
+  const readSystemHosts = useCallback(async () => {
+    try {
+      const txt = await window.electronAPI.readSystemHosts();
+      const parsed = await parseHosts(txt);
+      setHostEntry(parsed);
+    } catch (err) {
+      setError("读取系统hosts失败");
+      throw err;
+    }
+  }, []);
   // 检查权限
   const checkPermissions = useCallback(async () => {
     try {
@@ -140,13 +153,13 @@ export function useHosts() {
 
   // 应用配置
   const applyHosts = useCallback(async () => {
-    if (!hasPermissions) {
-      const granted = await requestAdmin();
-      if (!granted) {
-        setError("需要管理员权限才能应用配置");
-        return false;
-      }
-    }
+    // if (!hasPermissions) {
+    //   const granted = await requestAdmin();
+    //   if (!granted) {
+    //     setError("需要管理员权限才能应用配置");
+    //     return false;
+    //   }
+    // }
 
     try {
       await window.electronAPI.applyHosts();
@@ -196,18 +209,24 @@ export function useHosts() {
 
   // 初始化
   useEffect(() => {
-    checkPermissions();
+    // checkPermissions();
     loadGroups();
-  }, [checkPermissions, loadGroups]);
+  }, [loadGroups]);
+
+  // useEffect(() => {
+  //   readSystemHosts();
+  // }, [readSystemHosts]);
 
   return {
     groups,
+    hostEntry,
     loading,
     error,
     hasPermissions,
     adminDialogOpen,
     setAdminDialogOpen,
     checkPermissions,
+    readSystemHosts,
     requestAdmin,
     handleAdminSuccess,
     clearAdminPermissions,

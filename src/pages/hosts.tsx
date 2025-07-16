@@ -15,12 +15,12 @@ export default function HostsPage() {
     groups,
     loading,
     error,
-    hasPermissions,
+    // hasPermissions,
     adminDialogOpen,
     setAdminDialogOpen,
     handleAdminSuccess,
-    clearAdminPermissions,
-    requestAdmin,
+    // clearAdminPermissions,
+    // requestAdmin,
     clearError,
   } = useHosts();
   const [viewMode, setViewMode] = useState<ViewMode>("list");
@@ -60,7 +60,7 @@ export default function HostsPage() {
   return (
     <div className="container mx-auto space-y-6 p-6">
       {/* 权限状态显示 */}
-      {hasPermissions ? (
+      {/* {hasPermissions ? (
         <Alert>
           <Shield className="h-4 w-4" />
           <AlertDescription className="flex items-center justify-between">
@@ -80,7 +80,7 @@ export default function HostsPage() {
             </Button>
           </AlertDescription>
         </Alert>
-      )}
+      )} */}
 
       {/* 错误提示 */}
       {error && (
