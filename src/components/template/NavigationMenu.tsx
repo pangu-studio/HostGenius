@@ -1,56 +1,116 @@
-import React from "react";
+import React, { useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
-import {
-  NavigationMenu as NavigationMenuBase,
-  NavigationMenuItem,
-  NavigationMenuList,
-} from "@/components/ui/navigation-menu";
 import { Button } from "@/components/ui/button";
-import { Home, Network, Settings, Info } from "lucide-react";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Separator } from "@/components/ui/separator";
+import {
+  Home,
+  Network,
+  Settings,
+  Info,
+  Menu,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
+import { cn } from "@/utils/tailwind";
 
 export default function NavigationMenu() {
   const { t } = useTranslation();
+  const [isCollapsed, setIsCollapsed] = useState(false);
+
+  const navigationItems = [
+    {
+      to: "/",
+      icon: Home,
+      label: "首页",
+      key: "home",
+    },
+    {
+      to: "/hosts",
+      icon: Network,
+      label: t("hosts.title"),
+      key: "hosts",
+    },
+    {
+      to: "/second-page",
+      icon: Settings,
+      label: "设置",
+      key: "settings",
+    },
+    {
+      to: "/about",
+      icon: Info,
+      label: "关于",
+      key: "about",
+    },
+  ];
+
   return (
-    <div className="border-border/40 supports-[backdrop-filter]:bg-background/60 border-b backdrop-blur">
-      <div className="container flex h-14 items-center px-4">
-        <NavigationMenuBase>
-          <NavigationMenuList className="flex space-x-2">
-            <NavigationMenuItem>
-              <Button variant="ghost" size="sm" asChild>
-                <Link to="/" className="flex items-center space-x-2">
-                  <Home className="h-4 w-4" />
-                  <span>首页</span>
-                </Link>
-              </Button>
-            </NavigationMenuItem>
-            <NavigationMenuItem>
-              <Button variant="ghost" size="sm" asChild>
-                <Link to="/hosts" className="flex items-center space-x-2">
-                  <Network className="h-4 w-4" />
-                  <span>{t("hosts.title")}</span>
-                </Link>
-              </Button>
-            </NavigationMenuItem>
-            <NavigationMenuItem>
-              <Button variant="ghost" size="sm" asChild>
-                <Link to="/second-page" className="flex items-center space-x-2">
-                  <Settings className="h-4 w-4" />
-                  <span>设置</span>
-                </Link>
-              </Button>
-            </NavigationMenuItem>
-            <NavigationMenuItem>
-              <Button variant="ghost" size="sm" asChild>
-                <Link to="/about" className="flex items-center space-x-2">
-                  <Info className="h-4 w-4" />
-                  <span>关于</span>
-                </Link>
-              </Button>
-            </NavigationMenuItem>
-          </NavigationMenuList>
-        </NavigationMenuBase>
+    <div
+      className={cn(
+        "bg-background border-border/40 flex h-full flex-col border-r transition-all duration-300 ease-in-out",
+        isCollapsed ? "w-16" : "w-64",
+      )}
+    >
+      {/* 顶部标题和折叠按钮 */}
+      <div className="border-border/40 flex h-14 items-center border-b px-4">
+        {!isCollapsed && (
+          <div className="flex-1">
+            <h2 className="text-lg font-semibold">Host Genius</h2>
+          </div>
+        )}
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => setIsCollapsed(!isCollapsed)}
+          className="hover:bg-accent"
+        >
+          {isCollapsed ? (
+            <ChevronRight className="h-4 w-4" />
+          ) : (
+            <ChevronLeft className="h-4 w-4" />
+          )}
+        </Button>
       </div>
+
+      {/* 导航菜单 */}
+      <ScrollArea className="flex-1">
+        <div className="space-y-2 p-4">
+          {navigationItems.map((item) => {
+            const Icon = item.icon;
+            return (
+              <Link
+                key={item.key}
+                to={item.to}
+                className={cn(
+                  "hover:bg-accent hover:text-accent-foreground flex items-center rounded-md px-3 py-2 text-sm font-medium transition-colors",
+                  "[&.active]:bg-accent [&.active]:text-accent-foreground",
+                )}
+              >
+                <Icon
+                  className={cn(
+                    "h-4 w-4 flex-shrink-0",
+                    !isCollapsed && "mr-3",
+                  )}
+                />
+                {!isCollapsed && <span>{item.label}</span>}
+              </Link>
+            );
+          })}
+        </div>
+      </ScrollArea>
+
+      {/* 底部信息 */}
+      {!isCollapsed && (
+        <>
+          <Separator />
+          <div className="text-muted-foreground p-4 text-xs">
+            <p>版本 1.0.0</p>
+            <p>© 2024 Host Genius</p>
+          </div>
+        </>
+      )}
     </div>
   );
 }

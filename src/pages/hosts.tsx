@@ -58,30 +58,7 @@ export default function HostsPage() {
   }
 
   return (
-    <div className="container mx-auto space-y-6 p-6">
-      {/* 权限状态显示 */}
-      {/* {hasPermissions ? (
-        <Alert>
-          <Shield className="h-4 w-4" />
-          <AlertDescription className="flex items-center justify-between">
-            <span>管理员权限已验证，可以修改系统hosts文件</span>
-            <Button onClick={clearAdminPermissions} size="sm" variant="outline">
-              清除权限
-            </Button>
-          </AlertDescription>
-        </Alert>
-      ) : (
-        <Alert>
-          <AlertTriangle className="h-4 w-4" />
-          <AlertDescription>
-            需要管理员权限才能修改系统hosts文件，操作时会要求验证密码
-            <Button onClick={requestAdmin} size="sm" variant="outline">
-              申请权限
-            </Button>
-          </AlertDescription>
-        </Alert>
-      )} */}
-
+    <div className="space-y-6">
       {/* 错误提示 */}
       {error && (
         <Alert variant="destructive">

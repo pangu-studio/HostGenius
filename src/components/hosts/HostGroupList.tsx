@@ -220,7 +220,7 @@ export function HostGroupList({
                         行
                       </span>
                     </summary>
-                    <pre className="bg-muted mt-2 max-h-32 overflow-x-auto rounded-md p-3 text-xs">
+                    <pre className="bg-muted mt-2 max-h-48 overflow-y-auto rounded-md p-3 font-mono text-xs">
                       {group.content || "(空)"}
                     </pre>
                   </details>

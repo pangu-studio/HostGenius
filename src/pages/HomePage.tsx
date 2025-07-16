@@ -10,16 +10,22 @@ export default function HomePage() {
 
   return (
     <div className="flex h-full flex-col">
-      <div className="flex flex-1 flex-col items-center justify-center gap-2">
+      <div className="flex flex-1 flex-col items-center justify-center gap-6">
         <InitialIcons />
-        <span>
+        <div className="text-center">
           <h1 className="font-mono text-4xl font-bold">{t("appName")}</h1>
-          <p className="text-end text-sm uppercase text-muted-foreground" data-testid="pageTitle">
+          <p
+            className="text-muted-foreground mt-2 text-lg"
+            data-testid="pageTitle"
+          >
             {t("titleHomePage")}
           </p>
-        </span>
-        <LangToggle />
-        <ToggleTheme />
+        </div>
+
+        <div className="flex flex-col items-center gap-4">
+          <LangToggle />
+          <ToggleTheme />
+        </div>
       </div>
       <Footer />
     </div>
