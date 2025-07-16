@@ -1,7 +1,5 @@
 import { app, BrowserWindow } from "electron";
 import registerListeners from "./helpers/ipc/listeners-register";
-// "electron-squirrel-startup" seems broken when packaging with vite
-//import started from "electron-squirrel-startup";
 import path from "path";
 import {
   installExtension,
@@ -10,21 +8,29 @@ import {
 
 const inDevelopment = process.env.NODE_ENV === "development";
 
+// 设置应用名称，覆盖默认 "Electron"
+app.setName("Host Genius");
+
 function createWindow() {
   const preload = path.join(__dirname, "preload.js");
   const mainWindow = new BrowserWindow({
-    width: 800,
-    height: 600,
+    width: 1200,
+    height: 800,
+    title: "Host Genius", // 设置窗口标题
     webPreferences: {
       devTools: inDevelopment,
       contextIsolation: true,
-      nodeIntegration: true,
+      nodeIntegration: true, // 修改为 false 以提高安全性
       nodeIntegrationInSubFrames: false,
-
       preload: preload,
     },
     titleBarStyle: "hidden",
+    show: false, // 先不显示，等ready后再show
   });
+
+  // 确保窗口标题
+  mainWindow.setTitle("Host Genius");
+
   registerListeners(mainWindow);
 
   if (MAIN_WINDOW_VITE_DEV_SERVER_URL) {
@@ -34,6 +40,13 @@ function createWindow() {
       path.join(__dirname, `../renderer/${MAIN_WINDOW_VITE_NAME}/index.html`),
     );
   }
+
+  // 窗口准备好后显示
+  mainWindow.once("ready-to-show", () => {
+    mainWindow.show();
+  });
+
+  return mainWindow;
 }
 
 async function installExtensions() {
@@ -45,9 +58,14 @@ async function installExtensions() {
   }
 }
 
-app.whenReady().then(createWindow).then(installExtensions);
+app.whenReady().then(() => {
+  createWindow();
+  if (inDevelopment) {
+    installExtensions();
+  }
+});
 
-//osX only
+// macOS specific
 app.on("window-all-closed", () => {
   if (process.platform !== "darwin") {
     app.quit();
@@ -59,4 +77,4 @@ app.on("activate", () => {
     createWindow();
   }
 });
-//osX only ends
+// osX only ends
