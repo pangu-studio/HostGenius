@@ -112,123 +112,137 @@ export function HostGroupList({
   };
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-bold">Hosts 分组管理</h2>
-          <p className="text-muted-foreground">管理不同环境的hosts配置</p>
-        </div>
-        <div className="space-x-2">
-          <Button onClick={onCreateGroup} variant="outline">
-            新建分组
-          </Button>
-          <Button onClick={handleApplyHosts}>应用到系统</Button>
+    <div className="flex h-full flex-col">
+      {/* 固定的顶部操作栏 */}
+      <div className="bg-background/80 supports-[backdrop-filter]:bg-background/60 border-border/40 top-0 sticky z-40 border-b backdrop-blur">
+        <div className="-mt-px flex h-14 items-center justify-between px-4">
+          <div className="flex items-center space-x-4">
+            <h2 className="text-xl font-bold">Hosts 分组管理</h2>
+            {/* <p className="text-muted-foreground text-sm">
+              管理不同环境的hosts配置
+            </p> */}
+          </div>
+          <div className="flex items-center space-x-2">
+            <Button onClick={onCreateGroup} variant="outline" size="sm">
+              新建分组
+            </Button>
+            <Button onClick={handleApplyHosts} size="sm">
+              应用到系统
+            </Button>
+          </div>
         </div>
       </div>
 
-      <div className="grid gap-4">
-        {groups.map((group) => (
-          <Card
-            key={group.id}
-            className={`transition-all ${group.enabled ? "ring-primary/20 ring-2" : ""}`}
-          >
-            <CardHeader className="pb-3">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-3">
-                  <Switch
-                    checked={group.enabled}
-                    onCheckedChange={() => handleToggleGroup(group)}
-                    disabled={group.isSystem}
-                  />
+      {/* 可滚动的内容区域 */}
+      <div className="flex-1 overflow-auto p-4 pb-20">
+        <div className="grid gap-4">
+          {groups.map((group) => (
+            <Card
+              key={group.id}
+              className={`transition-all ${group.enabled ? "ring-primary/20 ring-2" : ""}`}
+            >
+              <CardHeader className="pb-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-3">
+                    <Switch
+                      checked={group.enabled}
+                      onCheckedChange={() => handleToggleGroup(group)}
+                      disabled={group.isSystem}
+                    />
+                    <div>
+                      <CardTitle className="flex items-center space-x-2">
+                        <span>{group.name}</span>
+                        {group.isSystem && (
+                          <Badge variant="outline">系统</Badge>
+                        )}
+                        {getSyncStatusBadge(group.syncStatus)}
+                      </CardTitle>
+                      {group.description && (
+                        <CardDescription>{group.description}</CardDescription>
+                      )}
+                    </div>
+                  </div>
+
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="sm">
+                        <MoreHorizontal className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem onClick={() => onEditGroup(group)}>
+                        <Edit className="mr-2 h-4 w-4" />
+                        编辑
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={() => handleExportGroup(group)}
+                      >
+                        <Download className="mr-2 h-4 w-4" />
+                        导出
+                      </DropdownMenuItem>
+                      {!group.isSystem && (
+                        <DropdownMenuItem
+                          onClick={() => {
+                            setGroupToDelete(group);
+                            setDeleteDialogOpen(true);
+                          }}
+                          className="text-destructive"
+                        >
+                          <Trash2 className="mr-2 h-4 w-4" />
+                          删除
+                        </DropdownMenuItem>
+                      )}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
+              </CardHeader>
+
+              <CardContent>
+                <div className="grid grid-cols-1 gap-4 text-sm md:grid-cols-3">
                   <div>
-                    <CardTitle className="flex items-center space-x-2">
-                      <span>{group.name}</span>
-                      {group.isSystem && <Badge variant="outline">系统</Badge>}
-                      {getSyncStatusBadge(group.syncStatus)}
-                    </CardTitle>
-                    {group.description && (
-                      <CardDescription>{group.description}</CardDescription>
-                    )}
+                    <span className="font-medium">版本：</span>
+                    <span className="text-muted-foreground">
+                      v{group.version}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="font-medium">创建时间：</span>
+                    <span className="text-muted-foreground">
+                      {formatDate(group.createdAt)}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="font-medium">更新时间：</span>
+                    <span className="text-muted-foreground">
+                      {formatDate(group.updatedAt)}
+                    </span>
                   </div>
                 </div>
 
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="sm">
-                      <MoreHorizontal className="h-4 w-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem onClick={() => onEditGroup(group)}>
-                      <Edit className="mr-2 h-4 w-4" />
-                      编辑
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => handleExportGroup(group)}>
-                      <Download className="mr-2 h-4 w-4" />
-                      导出
-                    </DropdownMenuItem>
-                    {!group.isSystem && (
-                      <DropdownMenuItem
-                        onClick={() => {
-                          setGroupToDelete(group);
-                          setDeleteDialogOpen(true);
-                        }}
-                        className="text-destructive"
-                      >
-                        <Trash2 className="mr-2 h-4 w-4" />
-                        删除
-                      </DropdownMenuItem>
-                    )}
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
-            </CardHeader>
-
-            <CardContent>
-              <div className="grid grid-cols-1 gap-4 text-sm md:grid-cols-3">
-                <div>
-                  <span className="font-medium">版本：</span>
-                  <span className="text-muted-foreground">
-                    v{group.version}
-                  </span>
-                </div>
-                <div>
-                  <span className="font-medium">创建时间：</span>
-                  <span className="text-muted-foreground">
-                    {formatDate(group.createdAt)}
-                  </span>
-                </div>
-                <div>
-                  <span className="font-medium">更新时间：</span>
-                  <span className="text-muted-foreground">
-                    {formatDate(group.updatedAt)}
-                  </span>
-                </div>
-              </div>
-
-              {group.content && (
-                <div className="mt-4">
-                  <details className="group">
-                    <summary className="flex cursor-pointer items-center text-sm font-medium">
-                      <span>查看内容</span>
-                      <span className="text-muted-foreground ml-auto">
-                        {
-                          group.content
-                            .split("\n")
-                            .filter((line) => line.trim()).length
-                        }{" "}
-                        行
-                      </span>
-                    </summary>
-                    <pre className="bg-muted mt-2 max-h-48 overflow-y-auto rounded-md p-3 font-mono text-xs">
-                      {group.content || "(空)"}
-                    </pre>
-                  </details>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        ))}
+                {group.content && (
+                  <div className="mt-4">
+                    <details className="group">
+                      <summary className="flex cursor-pointer items-center text-sm font-medium">
+                        <span>查看内容</span>
+                        <span className="text-muted-foreground ml-auto">
+                          {
+                            group.content
+                              .split("\n")
+                              .filter((line) => line.trim()).length
+                          }{" "}
+                          行
+                        </span>
+                      </summary>
+                      <pre className="bg-muted mt-2 max-h-48 overflow-y-auto rounded-md p-3 font-mono text-xs">
+                        {group.content || "(空)"}
+                      </pre>
+                    </details>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          ))}
+        </div>
       </div>
 
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
