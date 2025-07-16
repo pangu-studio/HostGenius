@@ -27,7 +27,7 @@ jobs:
         with:
           node-version: 20
       - name: Install dependencies
-        run: npm install
+        run: npm install && npm i lightningcss-win32-x64-msvc
       - name: Install Playwright Browsers
         run: npx playwright install --with-deps
       - name: Create Executable
