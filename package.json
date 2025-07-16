@@ -1,6 +1,6 @@
 {
-  "name": "electron-shadcn",
-  "productName": "electron-shadcn Template",
+  "name": "host-genius",
+  "productName": "HostGenius",
   "version": "1.0.0",
   "description": "Electron Forge with shadcn-ui (Vite + Typescript)",
   "main": ".vite/build/main.js",
@@ -19,7 +19,7 @@
     "test:e2e": "playwright test",
     "test:all": "vitest run && playwright test"
   },
-  "author": "ROG <luan.roger.2003@gmail.com>",
+  "author": "LXY <drmfly.liw@gmail.com>",
   "license": "MIT",
   "devDependencies": {
     "@electron-forge/cli": "^7.8.1",
