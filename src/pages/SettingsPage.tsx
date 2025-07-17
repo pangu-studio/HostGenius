@@ -65,7 +65,7 @@ export default function SettingsPage() {
           </div>
           <div className="text-muted-foreground flex items-center space-x-2 text-sm">
             <Save className="h-4 w-4" />
-            <span>设置已自动保存</span>
+            <span>{t("settings.autoSaved")}</span>
           </div>
         </div>
       </div>
@@ -188,8 +188,10 @@ export default function SettingsPage() {
           {/* 数据管理 */}
           <Card>
             <CardHeader>
-              <CardTitle>数据管理</CardTitle>
-              <CardDescription>管理应用数据和备份</CardDescription>
+              <CardTitle>{t("settings.dataManagement.title")}</CardTitle>
+              <CardDescription>
+                {t("settings.dataManagement.description")}
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
@@ -197,10 +199,11 @@ export default function SettingsPage() {
                   variant="outline"
                   onClick={() => window.electronAPI?.openDataDirectory?.()}
                 >
-                  打开数据目录
+                  {t("settings.dataManagement.openDataDirectory")}
                 </Button>
                 <Button variant="outline" disabled>
-                  清理缓存 (即将推出)
+                  {t("settings.dataManagement.clearCache")}{" "}
+                  {t("settings.dataManagement.comingSoon")}
                 </Button>
               </div>
             </CardContent>
@@ -217,10 +220,10 @@ export default function SettingsPage() {
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 gap-4 text-sm sm:grid-cols-2">
                 <div>
-                  <span className="font-medium">{t("appName")}:</span>
-                  <span className="text-muted-foreground ml-2">
+                  <span className="font-medium">{t("appName")}</span>
+                  {/* <span className="text-muted-foreground ml-2">
                     Host Genius
-                  </span>
+                  </span> */}
                 </div>
                 <div>
                   <span className="font-medium">

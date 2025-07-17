@@ -75,17 +75,17 @@ export function HostEditor({ group, onSave, onCancel }: HostEditorProps) {
     }
   }, [group]);
 
-  useEffect(() => {
-    readSystemHosts()
-      .then((result: any) => {
-        console.log("读取系统hosts内容:", result);
-        formData.content = result;
-      })
-      .catch((err: any) => {
-        console.error("读取系统hosts失败:", err);
-        toast.error(t("hosts.readSystemHostsError"));
-      });
-  }, [t]);
+  // useEffect(() => {
+  //   readSystemHosts()
+  //     .then((result: any) => {
+  //       console.log("读取系统hosts内容:", result);
+  //       formData.content = result;
+  //     })
+  //     .catch((err: any) => {
+  //       console.error("读取系统hosts失败:", err);
+  //       toast.error(t("hosts.readSystemHostsError"));
+  //     });
+  // }, [t]);
   const loadEntries = async (content: string) => {
     try {
       const parsed = await parseHosts(content);

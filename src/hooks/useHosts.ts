@@ -223,19 +223,6 @@ export function useHosts() {
     (async () => {
       try {
         await loadGroups();
-        console.log("分组加载成功", groups);
-        if (groups === undefined || (groups && groups.length === 0)) {
-          // 初始化系统hosts
-          // 如果没有分组，尝试读取系统hosts
-
-          const content = await window.electronAPI.readSystemHosts();
-          console.log("系统hosts内容:", hostEntry);
-
-          console.log("尝试解析系统hosts内容", content);
-          const parsed =
-            await window.electronAPI.parseSystemHostsContent(content);
-          console.log("解析后的hosts内容:", parsed);
-        }
       } catch (err) {
         setError("初始化失败: " + (err as Error).message);
         console.log("初始化失败:", err);

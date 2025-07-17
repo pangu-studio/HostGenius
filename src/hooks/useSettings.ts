@@ -70,11 +70,10 @@ export function useSettings() {
   const changeLanguage = useCallback(
     async (newLanguage: string) => {
       try {
-        setAppLanguage(newLanguage, i18n);
-        setCurrentLanguage(newLanguage);
-
         const settings = await loadSettings();
         await saveSettings({ ...settings, language: newLanguage });
+        setAppLanguage(newLanguage, i18n);
+        setCurrentLanguage(newLanguage);
       } catch (error) {
         console.error("Failed to change language:", error);
       }
