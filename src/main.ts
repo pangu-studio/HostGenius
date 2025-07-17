@@ -1,39 +1,50 @@
-import { app, BrowserWindow } from "electron";
+import { app, BrowserWindow, ipcMain } from "electron";
 import registerListeners from "./helpers/ipc/listeners-register";
 import path from "path";
 import {
   installExtension,
   REACT_DEVELOPER_TOOLS,
 } from "electron-devtools-installer";
-// import { SettingsStorage } from "./services/settingsStorage";
 
 const inDevelopment = process.env.NODE_ENV === "development";
 
 // 设置应用名称，覆盖默认 "Electron"
 app.setName("Host Genius");
+let mainWindow: BrowserWindow | null;
+let globalListenersRegistered = false; // 全局监听器注册标志
+
+// 注册全局IPC监听器（只注册一次）
+function setupGlobalListeners() {
+  if (globalListenersRegistered) {
+    return;
+  }
+
+  // 注册所有IPC监听器（包括 window:minimize）
+  registerListeners(null); // 传入 null 表示全局注册
+  globalListenersRegistered = true;
+}
 
 function createWindow() {
   const preload = path.join(__dirname, "preload.js");
-  const mainWindow = new BrowserWindow({
+  mainWindow = new BrowserWindow({
     width: 1200,
     height: 800,
-    title: "Host Genius", // 设置窗口标题
+    title: "Host Genius",
     webPreferences: {
       devTools: inDevelopment,
       contextIsolation: true,
-      nodeIntegration: true, // 确保为 true
+      nodeIntegration: true,
       nodeIntegrationInSubFrames: false,
       preload: preload,
     },
     titleBarStyle: "hidden",
-    show: false, // 先不显示，等ready后再show
+    show: false,
   });
 
   // 确保窗口标题
   mainWindow.setTitle("Host Genius");
 
-  registerListeners(mainWindow);
-
+  // 只注册窗口特定的监听器
   if (MAIN_WINDOW_VITE_DEV_SERVER_URL) {
     mainWindow.loadURL(MAIN_WINDOW_VITE_DEV_SERVER_URL);
   } else {
@@ -44,7 +55,17 @@ function createWindow() {
 
   // 窗口准备好后显示
   mainWindow.once("ready-to-show", () => {
-    mainWindow.show();
+    mainWindow?.show();
+  });
+
+  // 窗口关闭时处理
+  mainWindow.on("closed", () => {
+    mainWindow = null;
+    // 在非 macOS 平台上，清理全局监听器
+    if (process.platform !== "darwin") {
+      ipcMain.removeAllListeners();
+      globalListenersRegistered = false;
+    }
   });
 
   return mainWindow;
@@ -60,7 +81,12 @@ async function installExtensions() {
 }
 
 app.whenReady().then(() => {
+  // 首先注册全局监听器
+  setupGlobalListeners();
+
+  // 然后创建窗口
   createWindow();
+
   if (inDevelopment) {
     installExtensions();
   }
@@ -76,7 +102,16 @@ app.on("window-all-closed", () => {
 app.on("activate", () => {
   if (BrowserWindow.getAllWindows().length === 0) {
     createWindow();
+    // 全局监听器已经注册，不需要重新注册
   }
 });
+
+app.on("before-quit", () => {
+  // 应用退出前清理所有监听器
+  ipcMain.removeAllListeners();
+  globalListenersRegistered = false;
+});
+// osX only ends
+// osX only ends
 // osX only ends
 // osX only ends

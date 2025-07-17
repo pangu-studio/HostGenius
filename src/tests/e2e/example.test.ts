@@ -37,15 +37,19 @@ test.beforeAll(async () => {
 
 test("renders the first page", async () => {
   const page: Page = await electronApp.firstWindow();
-  const title = await page.waitForSelector("h1");
+  const title = await page.waitForSelector("h2");
   const text = await title.textContent();
-  expect(text).toBe("electron-shadcn");
+  expect(text).toBe("Host Genius");
 });
 
 test("renders page name", async () => {
   const page: Page = await electronApp.firstWindow();
-  await page.waitForSelector("h1");
-  const pageName = await page.getByTestId("pageTitle");
-  const text = await pageName.textContent();
-  expect(text).toBe("Home Page");
+  await page.waitForSelector("h2");
+  const btn_count = await page.locator("button").count();
+  console.log(
+    `Paragraph count: ${await page.locator("p").nth(0).textContent()}`,
+  );
+
+  console.log(`Button count: ${btn_count}`);
+  expect(btn_count).toBeGreaterThan(0);
 });

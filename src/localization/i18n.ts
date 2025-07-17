@@ -333,7 +333,8 @@ const initializeI18n = async () => {
             about: {
               title: "关于",
               version: "版本",
-              description: "Host Genius 是一个功能强大的 hosts 文件管理工具",
+              description:
+                "Host Genius 是由 Pangu Studio 开发的一款功能强大的 hosts 文件管理工具",
             },
             general: {
               title: "通用",

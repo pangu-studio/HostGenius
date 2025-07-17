@@ -49,7 +49,9 @@ export default function NavigationMenu() {
       <div className="border-border/40 flex h-14 items-center border-b px-4">
         {!isCollapsed && (
           <div className="flex-1">
-            <h2 className="text-lg font-semibold">Host Genius</h2>
+            <h2 className="text-lg font-semibold" id="logo" data-testid="logo">
+              Host Genius
+            </h2>
           </div>
         )}
         <Button
@@ -97,9 +99,9 @@ export default function NavigationMenu() {
       {!isCollapsed && (
         <>
           <Separator />
-          <div className="text-muted-foreground p-4 text-xs">
+          <div className="text-muted-foreground font-tomorrow p-4 text-xs uppercase">
             <p>版本 1.0.0</p>
-            <p>© 2024 Host Genius</p>
+            <p>© 2025 Pangu Studio</p>
           </div>
         </>
       )}

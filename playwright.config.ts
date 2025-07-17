@@ -12,6 +12,7 @@ export default defineConfig({
   reporter: "html",
   use: {
     trace: "on-first-retry",
+    testIdAttribute: "data-testid",
   },
 
   projects: [

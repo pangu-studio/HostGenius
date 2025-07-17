@@ -14,6 +14,7 @@ const config: ForgeConfig = {
     asar: true,
     name: "Host Genius",
     extraResource: ["./node_modules/better-sqlite3"],
+    icon: "./src/assets/icon/icon.icns",
   },
   rebuildConfig: {},
   hooks: {
@@ -75,6 +76,13 @@ const config: ForgeConfig = {
     new MakerZIP({}, ["darwin"]),
     new MakerRpm({}),
     new MakerDeb({}),
+    {
+      name: "@electron-forge/maker-dmg",
+      config: {
+        background: "./src/assets/dmg-background.png",
+        format: "ULFO",
+      },
+    },
   ],
   plugins: [
     new VitePlugin({
