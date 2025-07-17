@@ -18,4 +18,26 @@ export default defineConfig({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  optimizeDeps: {
+    exclude: [
+      "@tailwindcss/oxide",
+      "lightningcss-darwin-arm64",
+      "lightningcss-darwin-x64",
+      "lightningcss-win32-x64-msvc",
+      "lightningcss-linux-x64-gnu",
+      "lightningcss-linux-arm64-gnu",
+    ],
+  },
+  build: {
+    rollupOptions: {
+      external: [
+        "@tailwindcss/oxide",
+        "lightningcss-darwin-arm64",
+        "lightningcss-darwin-x64",
+        "lightningcss-win32-x64-msvc",
+        "lightningcss-linux-x64-gnu",
+        "lightningcss-linux-arm64-gnu",
+      ],
+    },
+  },
 });

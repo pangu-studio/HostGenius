@@ -13,7 +13,11 @@ const config: ForgeConfig = {
   packagerConfig: {
     asar: true,
     name: "Host Genius",
-    extraResource: ["./node_modules/better-sqlite3"],
+    extraResource: [
+      "./node_modules/better-sqlite3",
+      "./node_modules/@tailwindcss/oxide*",
+      "./node_modules/lightningcss*",
+    ],
   },
   rebuildConfig: {},
   hooks: {
@@ -25,23 +29,48 @@ const config: ForgeConfig = {
         "file-uri-to-path",
       ];
 
+      // Copy platform-specific packages if they exist
+      const platformPackages = [
+        "@tailwindcss/oxide-darwin-arm64",
+        "@tailwindcss/oxide-darwin-x64",
+        "@tailwindcss/oxide-win32-x64-msvc",
+        "@tailwindcss/oxide-linux-x64-gnu",
+        "@tailwindcss/oxide-linux-arm64-gnu",
+        "lightningcss-darwin-arm64",
+        "lightningcss-darwin-x64",
+        "lightningcss-win32-x64-msvc",
+        "lightningcss-linux-x64-gnu",
+        "lightningcss-linux-arm64-gnu",
+      ];
+
       // __dirname isn't accessible from here
       const dirnamePath: string = ".";
       const sourceNodeModulesPath = resolve(dirnamePath, "node_modules");
       const destNodeModulesPath = resolve(buildPath, "node_modules");
 
-      // Copy all asked packages in /node_modules directory inside the asar archive
+      // Copy all required packages
       await Promise.all(
-        requiredNativePackages.map(async (packageName) => {
-          const sourcePath = join(sourceNodeModulesPath, packageName);
-          const destPath = join(destNodeModulesPath, packageName);
+        [...requiredNativePackages, ...platformPackages].map(
+          async (packageName) => {
+            const sourcePath = join(sourceNodeModulesPath, packageName);
+            const destPath = join(destNodeModulesPath, packageName);
 
-          await mkdirs(dirname(destPath));
-          await copy(sourcePath, destPath, {
-            // recursive: true,
-            preserveTimestamps: true,
-          });
-        }),
+            try {
+              await mkdirs(dirname(destPath));
+              await copy(sourcePath, destPath, {
+                preserveTimestamps: true,
+              });
+            } catch (error) {
+              // Ignore errors for optional platform-specific packages
+              if (!platformPackages.includes(packageName)) {
+                throw error;
+              }
+              console.warn(
+                `Optional package ${packageName} not found, skipping...`,
+              );
+            }
+          },
+        ),
       );
     },
   },

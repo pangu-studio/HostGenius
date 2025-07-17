@@ -17,6 +17,7 @@ jobs:
         run: npm install
       - name: Run unit tests
         run: npm run test:unit
+
   build-macos-arm64:
     runs-on: macos-latest
     steps:
@@ -27,12 +28,43 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
+      - name: Clear npm cache
+        run: npm cache clean --force
+      - name: Install dependencies
+        run: |
+          npm install
+          npm install lightningcss-darwin-arm64
+          npm install @tailwindcss/oxide-darwin-arm64
+      - name: Rebuild native modules
+        run: npm run rebuild
       - name: Build
-        run: npm install && npm install lightningcss-darwin-arm64 && npm run make
+        run: npm run make
       - uses: actions/upload-artifact@v4
         with:
           name: macos-arm64-lib
           path: out/make/zip/darwin/arm64/Host Genius-darwin-arm64-1.0.0.zip
+
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Install dependencies
+        run: |
+          npm install
+          npm install lightningcss-win32-x64-msvc
+          npm install @tailwindcss/oxide-win32-x64-msvc
+      - name: Rebuild native modules
+        run: npm run rebuild
+      - name: Build
+        run: npm run make
+      - uses: actions/upload-artifact@v4
+        with:
+          name: windows-x64-lib
+          path: out/make/squirrel.windows/x64/Host Genius-1.0.0 Setup.exe
+
   test-e2e:
     timeout-minutes: 10
     runs-on: windows-latest
@@ -42,7 +74,12 @@ jobs:
         with:
           node-version: 20
       - name: Install dependencies
-        run: npm install && npm i lightningcss-win32-x64-msvc
+        run: |
+          npm install
+          npm install lightningcss-win32-x64-msvc
+          npm install @tailwindcss/oxide-win32-x64-msvc
+      - name: Rebuild native modules
+        run: npm run rebuild
       - name: Install Playwright Browsers
         run: npx playwright install --with-deps
       - name: Create Executable
