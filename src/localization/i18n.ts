@@ -1,8 +1,23 @@
 import i18n from "i18next";
 import { initReactI18next } from "react-i18next";
 
+// 获取保存的语言设置
+const getInitialLanguage = () => {
+  try {
+    const stored = localStorage.getItem("hostgenius-settings");
+    if (stored) {
+      const settings = JSON.parse(stored);
+      return settings.language || "zh-CN";
+    }
+  } catch (error) {
+    console.warn("Failed to load language setting:", error);
+  }
+  return "zh-CN";
+};
+
 i18n.use(initReactI18next).init({
-  fallbackLng: "en",
+  fallbackLng: "zh-CN",
+  lng: getInitialLanguage(), // 设置初始语言
   resources: {
     en: {
       translation: {
@@ -12,7 +27,7 @@ i18n.use(initReactI18next).init({
         // Host管理相关翻译
         hosts: {
           title: "Host Management",
-          description: "Manage hosts configurations for different environments",
+          description: "Categorize and manage your host configurations",
           groups: "Groups",
           systemHosts: "System Hosts",
           systemHostsView: "System Hosts View",
@@ -75,6 +90,57 @@ i18n.use(initReactI18next).init({
             copyError: "Copy failed",
             loadError: "Failed to load system hosts file",
           },
+          // 新增翻译条目
+          groupEnabled: 'Group "{{name}}" enabled',
+          groupDisabled: 'Group "{{name}}" disabled',
+          toggleGroupError: "Failed to toggle group status",
+          groupDeleted: 'Group "{{name}}" deleted',
+          deleteGroupError: "Failed to delete group",
+          applySuccess: "Hosts configuration applied to system",
+          applyError:
+            "Failed to apply hosts configuration, please check permissions",
+          exportSuccess: 'Group "{{name}}" exported',
+          exportError: "Failed to export group configuration",
+          statusLocal: "Local",
+          statusSynced: "Synced",
+          statusPending: "Pending",
+          statusConflict: "Conflict",
+          systemLabel: "System",
+          version: "Version",
+          createdAt: "Created",
+          updatedAt: "Updated",
+          viewContent: "View Content",
+          lines: "lines",
+          emptyContent: "(Empty)",
+          confirmDeleteTitle: "Confirm Delete Group",
+          confirmDeleteMessage:
+            'Are you sure you want to delete group "{{name}}"? This action cannot be undone.',
+          readSystemHostsError: "Failed to read system hosts",
+          nameRequired: "Please enter group name",
+          updateSuccess: 'Group "{{name}}" updated',
+          createSuccess: 'Group "{{name}}" created',
+          updateError: "Update failed",
+          createError: "Create failed",
+          fullscreenEdit: "Fullscreen Edit",
+          newGroup: "New Group",
+          exitFullscreen: "Exit Fullscreen",
+          saving: "Saving...",
+          totalEntries: "Total {{count}} entries",
+          enabledEntries: "Enabled {{count}} entries",
+          contentPlaceholder:
+            "127.0.0.1 localhost\n192.168.1.100 api.example.com # Development environment",
+          addEntry: "Add Entry",
+          optionalComment: "Optional comment",
+          noEntries: "No hosts entries",
+          addFirstEntry: "Add First Entry",
+          back: "Back",
+          basicInfo: "Basic Information",
+          namePlaceholder: "Enter group name",
+          enableGroup: "Enable Group",
+          descriptionPlaceholder: "Enter group description (optional)",
+          hostsConfig: "Hosts Configuration",
+          groupInfo: "Group Information",
+          syncStatus: "Sync Status",
         },
         // 设置页面相关翻译
         settings: {
@@ -112,8 +178,8 @@ i18n.use(initReactI18next).init({
         titleSecondPage: "第二页",
         // Host管理相关翻译
         hosts: {
-          title: "Hosts管理",
-          description: "管理不同环境的hosts配置",
+          title: "分组管理",
+          description: "分类管理您的host配置",
           groups: "分组",
           systemHosts: "系统Hosts",
           systemHostsView: "系统Hosts查看",
@@ -176,6 +242,56 @@ i18n.use(initReactI18next).init({
             copyError: "复制失败",
             loadError: "读取系统hosts文件失败",
           },
+          // 新增翻译条目
+          groupEnabled: '分组 "{{name}}" 已启用',
+          groupDisabled: '分组 "{{name}}" 已禁用',
+          toggleGroupError: "切换分组状态失败",
+          groupDeleted: '分组 "{{name}}" 已删除',
+          deleteGroupError: "无法删除分组，请重试",
+          applySuccess: "Hosts配置已应用到系统",
+          applyError: "应用Hosts配置失败，请检查权限",
+          exportSuccess: '分组 "{{name}}" 已导出',
+          exportError: "导出分组配置失败",
+          statusLocal: "本地",
+          statusSynced: "已同步",
+          statusPending: "待同步",
+          statusConflict: "冲突",
+          systemLabel: "系统",
+          version: "版本",
+          createdAt: "创建时间",
+          updatedAt: "更新时间",
+          viewContent: "查看内容",
+          lines: "行",
+          emptyContent: "(空)",
+          confirmDeleteTitle: "确认删除分组",
+          confirmDeleteMessage:
+            '你确定要删除分组 "{{name}}" 吗？此操作无法撤销。',
+          readSystemHostsError: "读取系统hosts失败",
+          nameRequired: "请输入分组名称",
+          updateSuccess: '分组 "{{name}}" 已更新',
+          createSuccess: '分组 "{{name}}" 已创建',
+          updateError: "更新失败",
+          createError: "创建失败",
+          fullscreenEdit: "全屏编辑",
+          newGroup: "新建分组",
+          exitFullscreen: "退出全屏",
+          saving: "保存中...",
+          totalEntries: "共 {{count}} 条有效记录",
+          enabledEntries: "启用 {{count}} 条",
+          contentPlaceholder:
+            "127.0.0.1 localhost\n192.168.1.100 api.example.com # 开发环境",
+          addEntry: "添加条目",
+          optionalComment: "可选备注",
+          noEntries: "暂无hosts条目",
+          addFirstEntry: "添加第一条记录",
+          back: "返回",
+          basicInfo: "基本信息",
+          namePlaceholder: "输入分组名称",
+          enableGroup: "启用分组",
+          descriptionPlaceholder: "输入分组描述（可选）",
+          hostsConfig: "Hosts 配置",
+          groupInfo: "分组信息",
+          syncStatus: "同步状态",
         },
         // 设置页面相关翻译
         settings: {
@@ -214,8 +330,7 @@ i18n.use(initReactI18next).init({
         // Host管理相关翻译
         hosts: {
           title: "Gerenciamento de Hosts",
-          description:
-            "Gerencie configurações de hosts para diferentes ambientes",
+          description: "Categorize e gerencie suas configurações de host",
           groups: "Grupos",
           systemHosts: "Hosts do Sistema",
           systemHostsView: "Visualização de Hosts do Sistema",
@@ -279,6 +394,57 @@ i18n.use(initReactI18next).init({
             copyError: "Falha ao copiar",
             loadError: "Falha ao carregar o arquivo hosts do sistema",
           },
+          // 新增翻译条目
+          groupEnabled: 'Group "{{name}}" enabled',
+          groupDisabled: 'Group "{{name}}" disabled',
+          toggleGroupError: "Failed to toggle group status",
+          groupDeleted: 'Group "{{name}}" deleted',
+          deleteGroupError: "Failed to delete group",
+          applySuccess: "Hosts configuration applied to system",
+          applyError:
+            "Failed to apply hosts configuration, please check permissions",
+          exportSuccess: 'Group "{{name}}" exported',
+          exportError: "Failed to export group configuration",
+          statusLocal: "Local",
+          statusSynced: "Synced",
+          statusPending: "Pending",
+          statusConflict: "Conflict",
+          systemLabel: "System",
+          version: "Version",
+          createdAt: "Created",
+          updatedAt: "Updated",
+          viewContent: "View Content",
+          lines: "lines",
+          emptyContent: "(Empty)",
+          confirmDeleteTitle: "Confirm Delete Group",
+          confirmDeleteMessage:
+            'Are you sure you want to delete group "{{name}}"? This action cannot be undone.',
+          readSystemHostsError: "Failed to read system hosts",
+          nameRequired: "Please enter group name",
+          updateSuccess: 'Group "{{name}}" updated',
+          createSuccess: 'Group "{{name}}" created',
+          updateError: "Update failed",
+          createError: "Create failed",
+          fullscreenEdit: "Fullscreen Edit",
+          newGroup: "New Group",
+          exitFullscreen: "Exit Fullscreen",
+          saving: "Saving...",
+          totalEntries: "Total {{count}} entries",
+          enabledEntries: "Enabled {{count}} entries",
+          contentPlaceholder:
+            "127.0.0.1 localhost\n192.168.1.100 api.example.com # Development environment",
+          addEntry: "Add Entry",
+          optionalComment: "Optional comment",
+          noEntries: "No hosts entries",
+          addFirstEntry: "Add First Entry",
+          back: "Back",
+          basicInfo: "Basic Information",
+          namePlaceholder: "Enter group name",
+          enableGroup: "Enable Group",
+          descriptionPlaceholder: "Enter group description (optional)",
+          hostsConfig: "Hosts Configuration",
+          groupInfo: "Group Information",
+          syncStatus: "Sync Status",
         },
         // 设置页面相关翻译
         settings: {
@@ -317,7 +483,7 @@ i18n.use(initReactI18next).init({
         titleSecondPage: "セカンドページ",
         hosts: {
           title: "ホスト管理",
-          description: "異なる環境のhosts設定を管理",
+          description: "ホスト設定を分類・管理",
           groups: "グループ",
           systemHosts: "システムHosts",
           systemHostsView: "システムHosts表示",
@@ -379,6 +545,57 @@ i18n.use(initReactI18next).init({
             copyError: "コピーに失敗しました",
             loadError: "システムhostsファイルの読み込みに失敗しました",
           },
+          // 新增翻译条目
+          groupEnabled: 'Group "{{name}}" enabled',
+          groupDisabled: 'Group "{{name}}" disabled',
+          toggleGroupError: "Failed to toggle group status",
+          groupDeleted: 'Group "{{name}}" deleted',
+          deleteGroupError: "Failed to delete group",
+          applySuccess: "Hosts configuration applied to system",
+          applyError:
+            "Failed to apply hosts configuration, please check permissions",
+          exportSuccess: 'Group "{{name}}" exported',
+          exportError: "Failed to export group configuration",
+          statusLocal: "Local",
+          statusSynced: "Synced",
+          statusPending: "Pending",
+          statusConflict: "Conflict",
+          systemLabel: "System",
+          version: "Version",
+          createdAt: "Created",
+          updatedAt: "Updated",
+          viewContent: "View Content",
+          lines: "lines",
+          emptyContent: "(Empty)",
+          confirmDeleteTitle: "Confirm Delete Group",
+          confirmDeleteMessage:
+            'Are you sure you want to delete group "{{name}}"? This action cannot be undone.',
+          readSystemHostsError: "Failed to read system hosts",
+          nameRequired: "Please enter group name",
+          updateSuccess: 'Group "{{name}}" updated',
+          createSuccess: 'Group "{{name}}" created',
+          updateError: "Update failed",
+          createError: "Create failed",
+          fullscreenEdit: "Fullscreen Edit",
+          newGroup: "New Group",
+          exitFullscreen: "Exit Fullscreen",
+          saving: "Saving...",
+          totalEntries: "Total {{count}} entries",
+          enabledEntries: "Enabled {{count}} entries",
+          contentPlaceholder:
+            "127.0.0.1 localhost\n192.168.1.100 api.example.com # Development environment",
+          addEntry: "Add Entry",
+          optionalComment: "Optional comment",
+          noEntries: "No hosts entries",
+          addFirstEntry: "Add First Entry",
+          back: "Back",
+          basicInfo: "Basic Information",
+          namePlaceholder: "Enter group name",
+          enableGroup: "Enable Group",
+          descriptionPlaceholder: "Enter group description (optional)",
+          hostsConfig: "Hosts Configuration",
+          groupInfo: "Group Information",
+          syncStatus: "Sync Status",
         },
         settings: {
           title: "設定",
@@ -415,7 +632,7 @@ i18n.use(initReactI18next).init({
         titleSecondPage: "두 번째 페이지",
         hosts: {
           title: "호스트 관리",
-          description: "다양한 환경의 hosts 설정 관리",
+          description: "호스트 구성을 분류하고 관리",
           groups: "그룹",
           systemHosts: "시스템 Hosts",
           systemHostsView: "시스템 Hosts 보기",
@@ -477,6 +694,57 @@ i18n.use(initReactI18next).init({
             copyError: "복사 실패",
             loadError: "시스템 hosts 파일 로드 실패",
           },
+          // 新增翻译条目
+          groupEnabled: 'Group "{{name}}" enabled',
+          groupDisabled: 'Group "{{name}}" disabled',
+          toggleGroupError: "Failed to toggle group status",
+          groupDeleted: 'Group "{{name}}" deleted',
+          deleteGroupError: "Failed to delete group",
+          applySuccess: "Hosts configuration applied to system",
+          applyError:
+            "Failed to apply hosts configuration, please check permissions",
+          exportSuccess: 'Group "{{name}}" exported',
+          exportError: "Failed to export group configuration",
+          statusLocal: "Local",
+          statusSynced: "Synced",
+          statusPending: "Pending",
+          statusConflict: "Conflict",
+          systemLabel: "System",
+          version: "Version",
+          createdAt: "Created",
+          updatedAt: "Updated",
+          viewContent: "View Content",
+          lines: "lines",
+          emptyContent: "(Empty)",
+          confirmDeleteTitle: "Confirm Delete Group",
+          confirmDeleteMessage:
+            'Are you sure you want to delete group "{{name}}"? This action cannot be undone.',
+          readSystemHostsError: "Failed to read system hosts",
+          nameRequired: "Please enter group name",
+          updateSuccess: 'Group "{{name}}" updated',
+          createSuccess: 'Group "{{name}}" created',
+          updateError: "Update failed",
+          createError: "Create failed",
+          fullscreenEdit: "Fullscreen Edit",
+          newGroup: "New Group",
+          exitFullscreen: "Exit Fullscreen",
+          saving: "Saving...",
+          totalEntries: "Total {{count}} entries",
+          enabledEntries: "Enabled {{count}} entries",
+          contentPlaceholder:
+            "127.0.0.1 localhost\n192.168.1.100 api.example.com # Development environment",
+          addEntry: "Add Entry",
+          optionalComment: "Optional comment",
+          noEntries: "No hosts entries",
+          addFirstEntry: "Add First Entry",
+          back: "Back",
+          basicInfo: "Basic Information",
+          namePlaceholder: "Enter group name",
+          enableGroup: "Enable Group",
+          descriptionPlaceholder: "Enter group description (optional)",
+          hostsConfig: "Hosts Configuration",
+          groupInfo: "Group Information",
+          syncStatus: "Sync Status",
         },
         settings: {
           title: "설정",
@@ -508,3 +776,5 @@ i18n.use(initReactI18next).init({
     },
   },
 });
+
+export default i18n;

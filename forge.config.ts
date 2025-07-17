@@ -13,11 +13,7 @@ const config: ForgeConfig = {
   packagerConfig: {
     asar: true,
     name: "Host Genius",
-    extraResource: [
-      "./node_modules/better-sqlite3",
-      // "./node_modules/@tailwindcss/oxide-*",
-      // "./node_modules/lightningcss*",
-    ],
+    extraResource: ["./node_modules/better-sqlite3"],
   },
   rebuildConfig: {},
   hooks: {

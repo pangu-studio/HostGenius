@@ -5,6 +5,7 @@ import {
   installExtension,
   REACT_DEVELOPER_TOOLS,
 } from "electron-devtools-installer";
+// import { SettingsStorage } from "./services/settingsStorage";
 
 const inDevelopment = process.env.NODE_ENV === "development";
 
@@ -20,7 +21,7 @@ function createWindow() {
     webPreferences: {
       devTools: inDevelopment,
       contextIsolation: true,
-      nodeIntegration: true, // 修改为 false 以提高安全性
+      nodeIntegration: true, // 确保为 true
       nodeIntegrationInSubFrames: false,
       preload: preload,
     },
@@ -77,4 +78,5 @@ app.on("activate", () => {
     createWindow();
   }
 });
+// osX only ends
 // osX only ends

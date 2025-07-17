@@ -21,6 +21,7 @@ import {
   Sun,
   Moon,
   Check,
+  Save,
 } from "lucide-react";
 import { useSettings } from "@/hooks/useSettings";
 import { ThemeMode } from "@/types/theme-mode";
@@ -55,15 +56,16 @@ export default function SettingsPage() {
     <div className="flex h-full flex-col">
       {/* 固定的顶部标题栏 */}
       <div className="bg-background/80 supports-[backdrop-filter]:bg-background/60 border-border/40 sticky top-0 z-40 border-b backdrop-blur">
-        <div className="-mt-px flex h-14 items-center px-4">
-          <div className="flex items-center space-x-3">
-            <SettingsIcon className="h-5 w-5" />
-            <div>
-              <h2 className="text-xl font-bold">{t("settings.title")}</h2>
-              <p className="text-muted-foreground hidden text-sm sm:block">
-                {t("settings.description")}
-              </p>
-            </div>
+        <div className="-mt-px flex h-14 items-center justify-between px-4">
+          <div className="flex items-center space-x-4">
+            <h2 className="text-xl font-bold">{t("settings.title")}</h2>
+            <p className="text-muted-foreground text-sm">
+              {t("settings.description")}
+            </p>
+          </div>
+          <div className="text-muted-foreground flex items-center space-x-2 text-sm">
+            <Save className="h-4 w-4" />
+            <span>设置已自动保存</span>
           </div>
         </div>
       </div>
@@ -183,6 +185,27 @@ export default function SettingsPage() {
             </CardContent>
           </Card>
 
+          {/* 数据管理 */}
+          <Card>
+            <CardHeader>
+              <CardTitle>数据管理</CardTitle>
+              <CardDescription>管理应用数据和备份</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <Button
+                  variant="outline"
+                  onClick={() => window.electronAPI?.openDataDirectory?.()}
+                >
+                  打开数据目录
+                </Button>
+                <Button variant="outline" disabled>
+                  清理缓存 (即将推出)
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+
           {/* 关于信息 */}
           <Card>
             <CardHeader>
@@ -220,27 +243,6 @@ export default function SettingsPage() {
                 <Badge variant="secondary">React</Badge>
                 <Badge variant="secondary">TypeScript</Badge>
                 <Badge variant="secondary">Tailwind CSS</Badge>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* 数据管理 */}
-          <Card>
-            <CardHeader>
-              <CardTitle>数据管理</CardTitle>
-              <CardDescription>管理应用数据和备份</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                <Button
-                  variant="outline"
-                  onClick={() => window.electronAPI?.openDataDirectory?.()}
-                >
-                  打开数据目录
-                </Button>
-                <Button variant="outline" disabled>
-                  清理缓存 (即将推出)
-                </Button>
               </div>
             </CardContent>
           </Card>

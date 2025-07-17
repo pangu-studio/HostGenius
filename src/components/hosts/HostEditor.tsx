@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -44,6 +45,7 @@ interface HostEditorProps {
 }
 
 export function HostEditor({ group, onSave, onCancel }: HostEditorProps) {
+  const { t } = useTranslation();
   const { createGroup, updateGroup, parseHosts, formatHosts, readSystemHosts } =
     useHosts();
 
@@ -81,9 +83,9 @@ export function HostEditor({ group, onSave, onCancel }: HostEditorProps) {
       })
       .catch((err: any) => {
         console.error("读取系统hosts失败:", err);
-        toast.error("读取系统hosts失败");
+        toast.error(t("hosts.readSystemHostsError"));
       });
-  }, []);
+  }, [t]);
   const loadEntries = async (content: string) => {
     try {
       const parsed = await parseHosts(content);
@@ -132,7 +134,7 @@ export function HostEditor({ group, onSave, onCancel }: HostEditorProps) {
 
   const handleSave = async () => {
     if (!formData.name.trim()) {
-      toast.error("请输入分组名称");
+      toast.error(t("hosts.nameRequired"));
       return;
     }
 
@@ -140,14 +142,16 @@ export function HostEditor({ group, onSave, onCancel }: HostEditorProps) {
     try {
       if (group) {
         await updateGroup(group.id, formData);
-        toast.success(`分组 "${formData.name}" 已更新`);
+        toast.success(t("hosts.updateSuccess", { name: formData.name }));
       } else {
         await createGroup(formData);
-        toast.success(`分组 "${formData.name}" 已创建`);
+        toast.success(t("hosts.createSuccess", { name: formData.name }));
       }
+      // 保存成功后调用 onSave 回调
       onSave();
     } catch (error) {
-      toast.error(group ? "更新失败" : "创建失败");
+      toast.error(group ? t("hosts.updateError") : t("hosts.createError"));
+      console.error("Save error:", error);
     } finally {
       setLoading(false);
     }
@@ -164,17 +168,18 @@ export function HostEditor({ group, onSave, onCancel }: HostEditorProps) {
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
             <h4 className="text-xl font-bold">
-              全屏编辑 - {group ? group.name : "新建分组"}
+              {t("hosts.fullscreenEdit")} -{" "}
+              {group ? group.name : t("hosts.newGroup")}
             </h4>
           </div>
           <div className="space-x-2">
             <Button variant="outline" onClick={toggleFullscreen}>
               <Minimize2 className="mr-2 h-4 w-4" />
-              退出全屏
+              {t("hosts.exitFullscreen")}
             </Button>
             <Button onClick={handleSave} disabled={loading}>
               <Save className="mr-2 h-4 w-4" />
-              {loading ? "保存中..." : "保存"}
+              {loading ? t("hosts.saving") : t("hosts.save")}
             </Button>
           </div>
         </div>
@@ -189,11 +194,11 @@ export function HostEditor({ group, onSave, onCancel }: HostEditorProps) {
           <TabsList className="grid w-full max-w-md flex-shrink-0 grid-cols-2">
             <TabsTrigger value="text" className="flex items-center space-x-2">
               <FileText className="h-4 w-4" />
-              <span>文本编辑</span>
+              <span>{t("hosts.systemView.textView")}</span>
             </TabsTrigger>
             <TabsTrigger value="table" className="flex items-center space-x-2">
               <List className="h-4 w-4" />
-              <span>表格编辑</span>
+              <span>{t("hosts.systemView.tableView")}</span>
             </TabsTrigger>
           </TabsList>
 
@@ -203,16 +208,22 @@ export function HostEditor({ group, onSave, onCancel }: HostEditorProps) {
           >
             <div className="flex flex-1 flex-col space-y-2">
               <div className="flex items-center justify-between">
-                <Label htmlFor="fullscreen-content">Hosts 内容</Label>
+                <Label htmlFor="fullscreen-content">{t("hosts.content")}</Label>
                 <div className="text-muted-foreground flex items-center space-x-4 text-sm">
-                  <span>共 {entries.length} 条有效记录</span>
+                  <span>
+                    {t("hosts.totalEntries", { count: entries.length })}
+                  </span>
                   <Separator orientation="vertical" className="h-4" />
-                  <span>启用 {entries.filter((e) => e.enabled).length} 条</span>
+                  <span>
+                    {t("hosts.enabledEntries", {
+                      count: entries.filter((e) => e.enabled).length,
+                    })}
+                  </span>
                 </div>
               </div>
               <Textarea
                 id="fullscreen-content"
-                placeholder="127.0.0.1 localhost&#10;192.168.1.100 api.example.com # 开发环境"
+                placeholder={t("hosts.contentPlaceholder")}
                 value={formData.content}
                 onChange={(e) => handleContentChange(e.target.value)}
                 className="flex-1 resize-none font-mono text-sm"
@@ -226,11 +237,13 @@ export function HostEditor({ group, onSave, onCancel }: HostEditorProps) {
           >
             <div className="flex flex-shrink-0 items-center justify-between">
               <div className="text-muted-foreground flex items-center space-x-4 text-sm">
-                <span>共 {entries.length} 条记录</span>
+                <span>
+                  {t("hosts.totalEntries", { count: entries.length })}
+                </span>
               </div>
               <Button onClick={addEntry} size="sm">
                 <Plus className="mr-2 h-4 w-4" />
-                添加条目
+                {t("hosts.addEntry")}
               </Button>
             </div>
 
@@ -238,11 +251,15 @@ export function HostEditor({ group, onSave, onCancel }: HostEditorProps) {
               <Table>
                 <TableHeader className="bg-background sticky top-0 z-10">
                   <TableRow>
-                    <TableHead className="w-[100px]">状态</TableHead>
-                    <TableHead>IP地址</TableHead>
-                    <TableHead>域名</TableHead>
-                    <TableHead>备注</TableHead>
-                    <TableHead className="w-[100px]">操作</TableHead>
+                    <TableHead className="w-[100px]">
+                      {t("hosts.systemView.status")}
+                    </TableHead>
+                    <TableHead>{t("hosts.ipAddress")}</TableHead>
+                    <TableHead>{t("hosts.domain")}</TableHead>
+                    <TableHead>{t("hosts.comment")}</TableHead>
+                    <TableHead className="w-[100px]">
+                      {t("hosts.actions")}
+                    </TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -283,7 +300,7 @@ export function HostEditor({ group, onSave, onCancel }: HostEditorProps) {
                           onChange={(e) =>
                             updateEntry(index, { comment: e.target.value })
                           }
-                          placeholder="可选备注"
+                          placeholder={t("hosts.optionalComment")}
                           className="text-sm"
                         />
                       </TableCell>
@@ -305,10 +322,10 @@ export function HostEditor({ group, onSave, onCancel }: HostEditorProps) {
 
             {entries.length === 0 && (
               <div className="text-muted-foreground py-8 text-center">
-                <p>暂无hosts条目</p>
+                <p>{t("hosts.noEntries")}</p>
                 <Button onClick={addEntry} variant="outline" className="mt-2">
                   <Plus className="mr-2 h-4 w-4" />
-                  添加第一条记录
+                  {t("hosts.addFirstEntry")}
                 </Button>
               </div>
             )}
@@ -331,21 +348,21 @@ export function HostEditor({ group, onSave, onCancel }: HostEditorProps) {
           <div className="flex h-14 items-center space-x-4">
             <Button variant="ghost" size="sm" onClick={onCancel}>
               <ArrowLeft className="mr-2 h-4 w-4" />
-              返回
+              {t("hosts.back")}
             </Button>
             <div>
               <h4 className="text-xl font-bold">
-                {group ? "编辑分组" : "新建分组"}
+                {group ? t("hosts.editGroup") : t("hosts.createGroup")}
               </h4>
             </div>
           </div>
           <div className="flex items-center space-x-2">
             <Button variant="outline" onClick={onCancel}>
-              取消
+              {t("hosts.cancel")}
             </Button>
             <Button onClick={handleSave} disabled={loading}>
               <Save className="mr-2 h-4 w-4" />
-              {loading ? "保存中..." : "保存"}
+              {loading ? t("hosts.saving") : t("hosts.save")}
             </Button>
           </div>
         </div>
@@ -360,7 +377,7 @@ export function HostEditor({ group, onSave, onCancel }: HostEditorProps) {
                 <CardHeader className="cursor-pointer transition-colors">
                   <div className="flex items-center justify-between">
                     <div>
-                      <CardTitle>基本信息</CardTitle>
+                      <CardTitle>{t("hosts.basicInfo")}</CardTitle>
                     </div>
                     <div className="hover:bg-accent/40">
                       {isBasicInfoOpen ? (
@@ -376,10 +393,10 @@ export function HostEditor({ group, onSave, onCancel }: HostEditorProps) {
                 <CardContent className="space-y-4">
                   <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                     <div className="space-y-2">
-                      <Label htmlFor="name">分组名称 *</Label>
+                      <Label htmlFor="name">{t("hosts.name")} *</Label>
                       <Input
                         id="name"
-                        placeholder="输入分组名称"
+                        placeholder={t("hosts.namePlaceholder")}
                         value={formData.name}
                         onChange={(e) =>
                           setFormData((prev) => ({
@@ -399,15 +416,17 @@ export function HostEditor({ group, onSave, onCancel }: HostEditorProps) {
                         }
                         disabled={group?.isSystem}
                       />
-                      <Label htmlFor="enabled">启用分组</Label>
+                      <Label htmlFor="enabled">{t("hosts.enableGroup")}</Label>
                     </div>
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="description">描述</Label>
+                    <Label htmlFor="description">
+                      {t("hosts.description")}
+                    </Label>
                     <Input
                       id="description"
-                      placeholder="输入分组描述（可选）"
+                      placeholder={t("hosts.descriptionPlaceholder")}
                       value={formData.description}
                       onChange={(e) =>
                         setFormData((prev) => ({
@@ -426,11 +445,11 @@ export function HostEditor({ group, onSave, onCancel }: HostEditorProps) {
             <CardHeader>
               <div className="flex items-center justify-between">
                 <div>
-                  <CardTitle>Hosts 配置</CardTitle>
+                  <CardTitle>{t("hosts.hostsConfig")}</CardTitle>
                 </div>
                 <Button variant="outline" size="sm" onClick={toggleFullscreen}>
                   <Maximize2 className="mr-2 h-4 w-4" />
-                  全屏编辑
+                  {t("hosts.fullscreenEdit")}
                 </Button>
               </div>
             </CardHeader>
@@ -442,23 +461,23 @@ export function HostEditor({ group, onSave, onCancel }: HostEditorProps) {
                     className="flex items-center space-x-2"
                   >
                     <FileText className="h-4 w-4" />
-                    <span>文本编辑</span>
+                    <span>{t("hosts.systemView.textView")}</span>
                   </TabsTrigger>
                   <TabsTrigger
                     value="table"
                     className="flex items-center space-x-2"
                   >
                     <List className="h-4 w-4" />
-                    <span>表格编辑</span>
+                    <span>{t("hosts.systemView.tableView")}</span>
                   </TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="text" className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="content">Hosts 内容</Label>
+                    <Label htmlFor="content">{t("hosts.content")}</Label>
                     <Textarea
                       id="content"
-                      placeholder="127.0.0.1 localhost&#10;192.168.1.100 api.example.com # 开发环境"
+                      placeholder={t("hosts.contentPlaceholder")}
                       value={formData.content}
                       onChange={(e) => handleContentChange(e.target.value)}
                       className="h-[400px] resize-none overflow-auto font-mono text-sm"
@@ -466,10 +485,14 @@ export function HostEditor({ group, onSave, onCancel }: HostEditorProps) {
                   </div>
 
                   <div className="text-muted-foreground flex items-center space-x-4 text-sm">
-                    <span>共 {entries.length} 条有效记录</span>
+                    <span>
+                      {t("hosts.totalEntries", { count: entries.length })}
+                    </span>
                     <Separator orientation="vertical" className="h-4" />
                     <span>
-                      启用 {entries.filter((e) => e.enabled).length} 条
+                      {t("hosts.enabledEntries", {
+                        count: entries.filter((e) => e.enabled).length,
+                      })}
                     </span>
                   </div>
                 </TabsContent>
@@ -477,11 +500,13 @@ export function HostEditor({ group, onSave, onCancel }: HostEditorProps) {
                 <TabsContent value="table" className="space-y-4">
                   <div className="flex items-center justify-between">
                     <div className="text-muted-foreground flex items-center space-x-4 text-sm">
-                      <span>共 {entries.length} 条记录</span>
+                      <span>
+                        {t("hosts.totalEntries", { count: entries.length })}
+                      </span>
                     </div>
                     <Button onClick={addEntry} size="sm">
                       <Plus className="mr-2 h-4 w-4" />
-                      添加条目
+                      {t("hosts.addEntry")}
                     </Button>
                   </div>
 
@@ -489,11 +514,15 @@ export function HostEditor({ group, onSave, onCancel }: HostEditorProps) {
                     <Table>
                       <TableHeader className="bg-background sticky top-0 z-10">
                         <TableRow>
-                          <TableHead className="w-[100px]">状态</TableHead>
-                          <TableHead>IP地址</TableHead>
-                          <TableHead>域名</TableHead>
-                          <TableHead>备注</TableHead>
-                          <TableHead className="w-[100px]">操作</TableHead>
+                          <TableHead className="w-[100px]">
+                            {t("hosts.systemView.status")}
+                          </TableHead>
+                          <TableHead>{t("hosts.ipAddress")}</TableHead>
+                          <TableHead>{t("hosts.domain")}</TableHead>
+                          <TableHead>{t("hosts.comment")}</TableHead>
+                          <TableHead className="w-[100px]">
+                            {t("hosts.actions")}
+                          </TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
@@ -536,7 +565,7 @@ export function HostEditor({ group, onSave, onCancel }: HostEditorProps) {
                                     comment: e.target.value,
                                   })
                                 }
-                                placeholder="可选备注"
+                                placeholder={t("hosts.optionalComment")}
                                 className="text-sm"
                               />
                             </TableCell>
@@ -558,14 +587,14 @@ export function HostEditor({ group, onSave, onCancel }: HostEditorProps) {
 
                   {entries.length === 0 && (
                     <div className="text-muted-foreground py-8 text-center">
-                      <p>暂无hosts条目</p>
+                      <p>{t("hosts.noEntries")}</p>
                       <Button
                         onClick={addEntry}
                         variant="outline"
                         className="mt-2"
                       >
                         <Plus className="mr-2 h-4 w-4" />
-                        添加第一条记录
+                        {t("hosts.addFirstEntry")}
                       </Button>
                     </div>
                   )}
@@ -577,34 +606,42 @@ export function HostEditor({ group, onSave, onCancel }: HostEditorProps) {
           {group && (
             <Card>
               <CardHeader>
-                <CardTitle>分组信息</CardTitle>
+                <CardTitle>{t("hosts.groupInfo")}</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-1 gap-4 text-sm md:grid-cols-2">
                   <div>
-                    <span className="font-medium">版本：</span>
+                    <span className="font-medium">{t("hosts.version")}：</span>
                     <Badge variant="outline">v{group.version}</Badge>
                   </div>
                   <div>
-                    <span className="font-medium">同步状态：</span>
+                    <span className="font-medium">
+                      {t("hosts.syncStatus")}：
+                    </span>
                     <Badge
                       variant={
                         group.syncStatus === "synced" ? "default" : "secondary"
                       }
                     >
-                      {group.syncStatus === "synced" ? "已同步" : "本地"}
+                      {group.syncStatus === "synced"
+                        ? t("hosts.statusSynced")
+                        : t("hosts.statusLocal")}
                     </Badge>
                   </div>
                   <div>
-                    <span className="font-medium">创建时间：</span>
+                    <span className="font-medium">
+                      {t("hosts.createdAt")}：
+                    </span>
                     <span className="text-muted-foreground">
-                      {new Date(group.createdAt).toLocaleString("zh-CN")}
+                      {new Date(group.createdAt).toLocaleString()}
                     </span>
                   </div>
                   <div>
-                    <span className="font-medium">更新时间：</span>
+                    <span className="font-medium">
+                      {t("hosts.updatedAt")}：
+                    </span>
                     <span className="text-muted-foreground">
-                      {new Date(group.updatedAt).toLocaleString("zh-CN")}
+                      {new Date(group.updatedAt).toLocaleString()}
                     </span>
                   </div>
                 </div>

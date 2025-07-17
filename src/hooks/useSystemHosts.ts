@@ -1,7 +1,9 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import { HostEntry } from "../preload";
 
 export function useSystemHosts() {
+  const { t } = useTranslation();
   const [rawContent, setRawContent] = useState<string>("");
   const [entries, setEntries] = useState<HostEntry[]>([]);
   const [loading, setLoading] = useState(false);
@@ -20,12 +22,12 @@ export function useSystemHosts() {
       const parsed = await window.electronAPI.parseHosts(content);
       setEntries(parsed);
     } catch (err) {
-      setError("读取系统hosts文件失败");
+      setError(t("hosts.systemView.loadError"));
       console.error("Failed to load system hosts:", err);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [t]);
 
   // 根据搜索条件过滤条目
   const filteredEntries = useMemo(() => {

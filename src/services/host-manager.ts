@@ -927,7 +927,7 @@ export class HostManagerService {
   }
 
   /**
-   * 导入SwitchHosts或HostGenius格式的配置文件
+   * 导入SwitchHosts或HostGenius格式的配置文件（同步版本）
    */
   importSwitchHostsConfig(filePath: string): boolean {
     try {
@@ -943,13 +943,13 @@ export class HostManagerService {
         const existingGroup = databaseService.getGroupByName(group.name);
         if (existingGroup && !existingGroup.isSystem) {
           // 更新现有分组
-          this.updateGroup(existingGroup.id, {
+          databaseService.updateGroup(existingGroup.id, {
             content: group.content,
             enabled: group.enabled,
           });
         } else if (!existingGroup) {
           // 创建新分组
-          this.createGroup({
+          databaseService.createGroup({
             name: group.name,
             description: `从配置文件导入的hosts规则`,
             content: group.content,
@@ -961,7 +961,7 @@ export class HostManagerService {
 
       return true;
     } catch (error) {
-      console.error("Failed to import hosts config:", error);
+      log.error("Failed to import hosts config:", error);
       return false;
     }
   }

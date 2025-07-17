@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -30,6 +31,7 @@ import { useSystemHosts } from "@/hooks/useSystemHosts";
 import { toast } from "sonner";
 
 export default function SystemHostsPage() {
+  const { t } = useTranslation();
   const {
     rawContent,
     filteredRawContent,
@@ -49,17 +51,17 @@ export default function SystemHostsPage() {
 
   const handleRefresh = async () => {
     await loadSystemHosts();
-    toast.success("系统hosts文件已刷新");
+    toast.success(t("hosts.systemView.refreshSuccess"));
   };
 
   const handleCopyContent = async () => {
     try {
       await navigator.clipboard.writeText(rawContent);
       setCopied(true);
-      toast.success("内容已复制到剪贴板");
+      toast.success(t("hosts.systemView.copySuccess"));
       setTimeout(() => setCopied(false), 2000);
     } catch (err) {
-      toast.error("复制失败");
+      toast.error(t("hosts.systemView.copyError"));
     }
   };
 
@@ -75,7 +77,7 @@ export default function SystemHostsPage() {
       <div className="flex h-64 items-center justify-center">
         <div className="flex items-center space-x-2">
           <Loader2 className="h-6 w-6 animate-spin" />
-          <span>加载系统hosts文件中...</span>
+          <span>{t("hosts.loading")}</span>
         </div>
       </div>
     );
@@ -87,9 +89,9 @@ export default function SystemHostsPage() {
       <div className="bg-background/80 supports-[backdrop-filter]:bg-background/60 border-border/40 sticky top-0 z-40 border-b backdrop-blur">
         <div className="-mt-px flex h-14 items-center justify-between px-4">
           <div className="flex items-center space-x-4">
-            <h2 className="text-xl font-bold">系统Hosts查看</h2>
+            <h2 className="text-xl font-bold">{t("hosts.systemView.title")}</h2>
             <Badge variant="outline" className="text-xs">
-              只读模式
+              {t("hosts.systemView.readOnlyMode")}
             </Badge>
           </div>
           <div className="flex items-center space-x-2">
@@ -104,11 +106,13 @@ export default function SystemHostsPage() {
               ) : (
                 <Copy className="mr-2 h-4 w-4" />
               )}
-              {copied ? "已复制" : "复制内容"}
+              {copied
+                ? t("hosts.systemView.copied")
+                : t("hosts.systemView.copyContent")}
             </Button>
             <Button onClick={handleRefresh} size="sm">
               <RefreshCw className="mr-2 h-4 w-4" />
-              刷新
+              {t("hosts.systemView.refresh")}
             </Button>
           </div>
         </div>
@@ -122,7 +126,7 @@ export default function SystemHostsPage() {
             <AlertDescription className="flex items-center justify-between">
               <span>{error}</span>
               <Button onClick={clearError} size="sm" variant="outline">
-                关闭
+                {t("hosts.cancel")}
               </Button>
             </AlertDescription>
           </Alert>
@@ -136,37 +140,49 @@ export default function SystemHostsPage() {
             <div className="text-primary text-2xl font-bold">
               {stats.totalLines}
             </div>
-            <div className="text-muted-foreground text-xs">总行数</div>
+            <div className="text-muted-foreground text-xs">
+              {t("hosts.systemView.totalLines")}
+            </div>
           </div>
           <div className="text-center">
             <div className="text-2xl font-bold text-blue-600">
               {stats.hostLines}
             </div>
-            <div className="text-muted-foreground text-xs">hosts条目</div>
+            <div className="text-muted-foreground text-xs">
+              {t("hosts.systemView.hostLines")}
+            </div>
           </div>
           <div className="text-center">
             <div className="text-2xl font-bold text-green-600">
               {stats.enabledHosts}
             </div>
-            <div className="text-muted-foreground text-xs">启用条目</div>
+            <div className="text-muted-foreground text-xs">
+              {t("hosts.systemView.enabledHosts")}
+            </div>
           </div>
           <div className="text-center">
             <div className="text-2xl font-bold text-gray-600">
               {stats.commentLines}
             </div>
-            <div className="text-muted-foreground text-xs">注释行</div>
+            <div className="text-muted-foreground text-xs">
+              {t("hosts.systemView.commentLines")}
+            </div>
           </div>
           <div className="text-center">
             <div className="text-2xl font-bold text-orange-600">
               {stats.filteredEntries}
             </div>
-            <div className="text-muted-foreground text-xs">搜索结果</div>
+            <div className="text-muted-foreground text-xs">
+              {t("hosts.systemView.filteredEntries")}
+            </div>
           </div>
           <div className="text-center">
             <div className="text-lg font-bold text-purple-600">
               {formatFileSize(rawContent)}
             </div>
-            <div className="text-muted-foreground text-xs">文件大小</div>
+            <div className="text-muted-foreground text-xs">
+              {t("hosts.systemView.fileSize")}
+            </div>
           </div>
         </div>
       </div>
@@ -176,7 +192,7 @@ export default function SystemHostsPage() {
         <div className="relative max-w-md">
           <Search className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
           <Input
-            placeholder="搜索IP、域名或注释..."
+            placeholder={t("hosts.systemView.search")}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="pl-10"
@@ -190,7 +206,7 @@ export default function SystemHostsPage() {
           <CardHeader>
             <CardTitle className="flex items-center space-x-2">
               <Info className="h-5 w-5" />
-              <span>系统Hosts文件内容</span>
+              <span>{t("hosts.systemView.fileContent")}</span>
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -201,36 +217,44 @@ export default function SystemHostsPage() {
                   className="flex items-center space-x-2"
                 >
                   <FileText className="h-4 w-4" />
-                  <span>文本查看</span>
+                  <span>{t("hosts.systemView.textView")}</span>
                 </TabsTrigger>
                 <TabsTrigger
                   value="table"
                   className="flex items-center space-x-2"
                 >
                   <List className="h-4 w-4" />
-                  <span>表格查看</span>
+                  <span>{t("hosts.systemView.tableView")}</span>
                 </TabsTrigger>
               </TabsList>
 
               <TabsContent value="text" className="space-y-4">
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <Label htmlFor="content">文件内容</Label>
+                    <Label htmlFor="content">
+                      {t("hosts.systemView.fileContent")}
+                    </Label>
                     <div className="text-muted-foreground flex items-center space-x-4 text-sm">
                       {searchTerm && (
                         <>
-                          <span>搜索: "{searchTerm}"</span>
+                          <span>
+                            {t("hosts.systemView.searchResults", {
+                              term: searchTerm,
+                            })}
+                          </span>
                           <Separator orientation="vertical" className="h-4" />
                         </>
                       )}
                       <span>
-                        显示 {filteredRawContent.split("\n").length} 行
+                        {t("hosts.systemView.showingLines", {
+                          count: filteredRawContent.split("\n").length,
+                        })}
                       </span>
                     </div>
                   </div>
                   <div className="relative">
                     <pre className="bg-muted h-[500px] overflow-auto rounded-md border p-4 font-mono text-sm">
-                      {filteredRawContent || "(文件为空)"}
+                      {filteredRawContent || t("hosts.systemView.emptyFile")}
                     </pre>
                   </div>
                 </div>
@@ -239,16 +263,23 @@ export default function SystemHostsPage() {
               <TabsContent value="table" className="space-y-4">
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <Label>Hosts条目</Label>
+                    <Label>{t("hosts.systemView.hostEntries")}</Label>
                     <div className="text-muted-foreground flex items-center space-x-4 text-sm">
                       {searchTerm && (
                         <>
-                          <span>搜索: "{searchTerm}"</span>
+                          <span>
+                            {t("hosts.systemView.searchResults", {
+                              term: searchTerm,
+                            })}
+                          </span>
                           <Separator orientation="vertical" className="h-4" />
                         </>
                       )}
                       <span>
-                        显示 {filteredEntries.length} / {entries.length} 条
+                        {t("hosts.systemView.showingEntries", {
+                          filtered: filteredEntries.length,
+                          total: entries.length,
+                        })}
                       </span>
                     </div>
                   </div>
@@ -258,10 +289,12 @@ export default function SystemHostsPage() {
                       <Table>
                         <TableHeader className="bg-background sticky top-0 z-10">
                           <TableRow>
-                            <TableHead className="w-[80px]">状态</TableHead>
-                            <TableHead>IP地址</TableHead>
-                            <TableHead>域名</TableHead>
-                            <TableHead>备注</TableHead>
+                            <TableHead className="w-[80px]">
+                              {t("hosts.systemView.status")}
+                            </TableHead>
+                            <TableHead>{t("hosts.ipAddress")}</TableHead>
+                            <TableHead>{t("hosts.domain")}</TableHead>
+                            <TableHead>{t("hosts.comment")}</TableHead>
                           </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -274,7 +307,9 @@ export default function SystemHostsPage() {
                                   }
                                   className="text-xs"
                                 >
-                                  {entry.enabled ? "启用" : "禁用"}
+                                  {entry.enabled
+                                    ? t("hosts.enabled")
+                                    : t("hosts.disabled")}
                                 </Badge>
                               </TableCell>
                               <TableCell className="font-mono text-sm">
@@ -294,18 +329,22 @@ export default function SystemHostsPage() {
                       <div className="text-muted-foreground py-8 text-center">
                         {searchTerm ? (
                           <div>
-                            <p>未找到包含 "{searchTerm}" 的hosts条目</p>
+                            <p>
+                              {t("hosts.systemView.noResults", {
+                                term: searchTerm,
+                              })}
+                            </p>
                             <Button
                               variant="outline"
                               size="sm"
                               className="mt-2"
                               onClick={() => setSearchTerm("")}
                             >
-                              清除搜索
+                              {t("hosts.systemView.clearSearch")}
                             </Button>
                           </div>
                         ) : (
-                          <p>系统hosts文件中没有有效的hosts条目</p>
+                          <p>{t("hosts.systemView.noEntries")}</p>
                         )}
                       </div>
                     )}

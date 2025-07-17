@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   Card,
   CardContent,
@@ -26,7 +27,15 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
-import { MoreHorizontal, Edit, Trash2, Download } from "lucide-react";
+import {
+  MoreHorizontal,
+  Edit,
+  Trash2,
+  Download,
+  ChevronDown,
+  ChevronRight,
+  Eye,
+} from "lucide-react";
 import { HostGroup } from "../../preload";
 import { useHosts } from "../../hooks/useHosts";
 
@@ -41,18 +50,22 @@ export function HostGroupList({
   onEditGroup,
   onCreateGroup,
 }: HostGroupListProps) {
+  const { t } = useTranslation();
   const { toggleGroup, deleteGroup, applyHosts } = useHosts();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [groupToDelete, setGroupToDelete] = useState<HostGroup | null>(null);
+  const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
 
   const handleToggleGroup = async (group: HostGroup) => {
     try {
       await toggleGroup(group.id);
       toast.success(
-        `分组 "${group.name}" 已${group.enabled ? "禁用" : "启用"}`,
+        t(group.enabled ? "hosts.groupDisabled" : "hosts.groupEnabled", {
+          name: group.name,
+        }),
       );
     } catch (error) {
-      toast.error("切换分组状态失败");
+      toast.error(t("hosts.toggleGroupError"));
     }
   };
 
@@ -61,20 +74,20 @@ export function HostGroupList({
 
     try {
       await deleteGroup(groupToDelete.id);
-      toast.success(`分组 "${groupToDelete.name}" 已删除`);
+      toast.success(t("hosts.groupDeleted", { name: groupToDelete.name }));
       setDeleteDialogOpen(false);
       setGroupToDelete(null);
     } catch (error) {
-      toast.error("无法删除分组，请重试");
+      toast.error(t("hosts.deleteGroupError"));
     }
   };
 
   const handleApplyHosts = async () => {
     try {
       await applyHosts();
-      toast.success("Hosts配置已应用到系统");
+      toast.success(t("hosts.applySuccess"));
     } catch (error) {
-      toast.error("应用Hosts配置失败，请检查权限");
+      toast.error(t("hosts.applyError"));
     }
   };
 
@@ -89,18 +102,21 @@ export function HostGroupList({
       a.click();
       URL.revokeObjectURL(url);
 
-      toast.success(`分组 "${group.name}" 已导出`);
+      toast.success(t("hosts.exportSuccess", { name: group.name }));
     } catch (error) {
-      toast.error("导出分组配置失败");
+      toast.error(t("hosts.exportError"));
     }
   };
 
   const getSyncStatusBadge = (status: HostGroup["syncStatus"]) => {
     const variants = {
-      local: { variant: "secondary" as const, text: "本地" },
-      synced: { variant: "default" as const, text: "已同步" },
-      pending: { variant: "outline" as const, text: "待同步" },
-      conflict: { variant: "destructive" as const, text: "冲突" },
+      local: { variant: "secondary" as const, text: t("hosts.statusLocal") },
+      synced: { variant: "default" as const, text: t("hosts.statusSynced") },
+      pending: { variant: "outline" as const, text: t("hosts.statusPending") },
+      conflict: {
+        variant: "destructive" as const,
+        text: t("hosts.statusConflict"),
+      },
     };
 
     const config = variants[status];
@@ -108,38 +124,48 @@ export function HostGroupList({
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleString("zh-CN");
+    return new Date(dateString).toLocaleString();
+  };
+
+  const toggleGroupContent = (groupId: string) => {
+    const newExpanded = new Set(expandedGroups);
+    if (newExpanded.has(groupId)) {
+      newExpanded.delete(groupId);
+    } else {
+      newExpanded.add(groupId);
+    }
+    setExpandedGroups(newExpanded);
   };
 
   return (
     <div className="flex h-full flex-col">
       {/* 固定的顶部操作栏 */}
-      <div className="bg-background/80 supports-[backdrop-filter]:bg-background/60 border-border/40 top-0 sticky z-40 border-b backdrop-blur">
+      <div className="bg-background/80 supports-[backdrop-filter]:bg-background/60 border-border/40 sticky top-0 z-40 border-b backdrop-blur">
         <div className="-mt-px flex h-14 items-center justify-between px-4">
           <div className="flex items-center space-x-4">
-            <h2 className="text-xl font-bold">Hosts 分组管理</h2>
-            {/* <p className="text-muted-foreground text-sm">
-              管理不同环境的hosts配置
-            </p> */}
+            <h2 className="text-xl font-bold">{t("hosts.title")}</h2>
+            <p className="text-muted-foreground text-sm">
+              {t("hosts.description")}
+            </p>
           </div>
           <div className="flex items-center space-x-2">
             <Button onClick={onCreateGroup} variant="outline" size="sm">
-              新建分组
+              {t("hosts.createGroup")}
             </Button>
             <Button onClick={handleApplyHosts} size="sm">
-              应用到系统
+              {t("hosts.applyToSystem")}
             </Button>
           </div>
         </div>
       </div>
 
       {/* 可滚动的内容区域 */}
-      <div className="flex-1 overflow-auto p-4 pb-20">
+      <div className="flex-1 overflow-x-hidden overflow-y-auto p-4 pb-20">
         <div className="grid gap-4">
           {groups.map((group) => (
             <Card
               key={group.id}
-              className={`transition-all ${group.enabled ? "ring-primary/20 ring-2" : ""}`}
+              className={`transition-all ${group.enabled ? "ring-primary/5 ring-1" : ""}`}
             >
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
@@ -153,7 +179,9 @@ export function HostGroupList({
                       <CardTitle className="flex items-center space-x-2">
                         <span>{group.name}</span>
                         {group.isSystem && (
-                          <Badge variant="outline">系统</Badge>
+                          <Badge variant="outline">
+                            {t("hosts.systemLabel")}
+                          </Badge>
                         )}
                         {getSyncStatusBadge(group.syncStatus)}
                       </CardTitle>
@@ -172,13 +200,13 @@ export function HostGroupList({
                     <DropdownMenuContent align="end">
                       <DropdownMenuItem onClick={() => onEditGroup(group)}>
                         <Edit className="mr-2 h-4 w-4" />
-                        编辑
+                        {t("hosts.edit")}
                       </DropdownMenuItem>
                       <DropdownMenuItem
                         onClick={() => handleExportGroup(group)}
                       >
                         <Download className="mr-2 h-4 w-4" />
-                        导出
+                        {t("hosts.export")}
                       </DropdownMenuItem>
                       {!group.isSystem && (
                         <DropdownMenuItem
@@ -189,7 +217,7 @@ export function HostGroupList({
                           className="text-destructive"
                         >
                           <Trash2 className="mr-2 h-4 w-4" />
-                          删除
+                          {t("hosts.delete")}
                         </DropdownMenuItem>
                       )}
                     </DropdownMenuContent>
@@ -200,19 +228,23 @@ export function HostGroupList({
               <CardContent>
                 <div className="grid grid-cols-1 gap-4 text-sm md:grid-cols-3">
                   <div>
-                    <span className="font-medium">版本：</span>
+                    <span className="font-medium">{t("hosts.version")}：</span>
                     <span className="text-muted-foreground">
                       v{group.version}
                     </span>
                   </div>
                   <div>
-                    <span className="font-medium">创建时间：</span>
+                    <span className="font-medium">
+                      {t("hosts.createdAt")}：
+                    </span>
                     <span className="text-muted-foreground">
                       {formatDate(group.createdAt)}
                     </span>
                   </div>
                   <div>
-                    <span className="font-medium">更新时间：</span>
+                    <span className="font-medium">
+                      {t("hosts.updatedAt")}：
+                    </span>
                     <span className="text-muted-foreground">
                       {formatDate(group.updatedAt)}
                     </span>
@@ -221,22 +253,40 @@ export function HostGroupList({
 
                 {group.content && (
                   <div className="mt-4">
-                    <details className="group">
-                      <summary className="flex cursor-pointer items-center text-sm font-medium">
-                        <span>查看内容</span>
-                        <span className="text-muted-foreground ml-auto">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => toggleGroupContent(group.id)}
+                      className="hover:bg-accent w-full justify-between p-2 text-sm font-medium"
+                    >
+                      <div className="flex items-center space-x-2">
+                        <Eye className="h-4 w-4" />
+                        <span>{t("hosts.viewContent")}</span>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <span className="text-muted-foreground text-xs">
                           {
                             group.content
                               .split("\n")
                               .filter((line) => line.trim()).length
                           }{" "}
-                          行
+                          {t("hosts.lines")}
                         </span>
-                      </summary>
-                      <pre className="bg-muted mt-2 max-h-48 overflow-y-auto rounded-md p-3 font-mono text-xs">
-                        {group.content || "(空)"}
-                      </pre>
-                    </details>
+                        {expandedGroups.has(group.id) ? (
+                          <ChevronDown className="h-4 w-4" />
+                        ) : (
+                          <ChevronRight className="h-4 w-4" />
+                        )}
+                      </div>
+                    </Button>
+
+                    {expandedGroups.has(group.id) && (
+                      <div className="bg-muted mt-2 max-h-120 overflow-auto rounded-md border">
+                        <pre className="w-1 p-3 font-mono text-xs leading-relaxed whitespace-pre">
+                          {group.content || t("hosts.emptyContent")}
+                        </pre>
+                      </div>
+                    )}
                   </div>
                 )}
               </CardContent>
@@ -248,18 +298,18 @@ export function HostGroupList({
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>确认删除分组</AlertDialogTitle>
+            <AlertDialogTitle>{t("hosts.confirmDeleteTitle")}</AlertDialogTitle>
             <AlertDialogDescription>
-              你确定要删除分组 "{groupToDelete?.name}" 吗？此操作无法撤销。
+              {t("hosts.confirmDeleteMessage", { name: groupToDelete?.name })}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>取消</AlertDialogCancel>
+            <AlertDialogCancel>{t("hosts.cancel")}</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDeleteGroup}
               className="bg-destructive text-destructive-foreground"
             >
-              删除
+              {t("hosts.delete")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

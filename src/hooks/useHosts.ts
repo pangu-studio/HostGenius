@@ -50,7 +50,7 @@ export function useHosts() {
     }) => {
       try {
         const id = await window.electronAPI.createGroup(data);
-        await loadGroups();
+        await loadGroups(); // 确保等待列表刷新完成
         return id;
       } catch (err) {
         setError("创建分组失败");
@@ -74,7 +74,7 @@ export function useHosts() {
       try {
         const result = await window.electronAPI.updateGroup(id, data);
         if (result) {
-          await loadGroups();
+          await loadGroups(); // 确保等待列表刷新完成
         }
         return result;
       } catch (err) {
@@ -91,7 +91,7 @@ export function useHosts() {
       try {
         const result = await window.electronAPI.deleteGroup(id);
         if (result) {
-          await loadGroups();
+          await loadGroups(); // 确保等待列表刷新完成
         }
         return result;
       } catch (err) {
@@ -108,7 +108,7 @@ export function useHosts() {
       try {
         const result = await window.electronAPI.toggleGroup(id);
         if (result) {
-          await loadGroups();
+          await loadGroups(); // 确保等待列表刷新完成
         }
         return result;
       } catch (err) {
@@ -164,6 +164,60 @@ export function useHosts() {
     [],
   );
 
+  // 导入文件
+  const importHostsFile = useCallback(
+    async (filePath: string) => {
+      try {
+        const result = await window.electronAPI.importHostsFile(filePath);
+        if (result) {
+          await loadGroups(); // 刷新分组列表
+        }
+        return result;
+      } catch (err) {
+        setError("导入文件失败");
+        return false;
+      }
+    },
+    [loadGroups],
+  );
+
+  // 导入 SwitchHosts 文件
+  const importSwitchHostsFile = useCallback(
+    async (filePath: string) => {
+      try {
+        const result = await window.electronAPI.importSwitchHostsFile(filePath);
+        if (result) {
+          await loadGroups(); // 刷新分组列表
+        }
+        return result;
+      } catch (err) {
+        setError("导入 SwitchHosts 文件失败");
+        return false;
+      }
+    },
+    [loadGroups],
+  );
+
+  // 解析分组内容
+  const parseHostsGroups = useCallback(async (content: string) => {
+    try {
+      return await window.electronAPI.parseHostsGroups(content);
+    } catch (err) {
+      setError("解析分组内容失败");
+      return [];
+    }
+  }, []);
+
+  // 生成 SwitchHosts 兼容内容
+  const generateSwitchHostsContent = useCallback(async () => {
+    try {
+      return await window.electronAPI.generateSwitchHostsContent();
+    } catch (err) {
+      setError("生成 SwitchHosts 内容失败");
+      return "";
+    }
+  }, []);
+
   // 初始化
   useEffect(() => {
     (async () => {
@@ -206,6 +260,10 @@ export function useHosts() {
     applyHosts,
     parseHosts,
     formatHosts,
+    importHostsFile,
+    importSwitchHostsFile,
+    parseHostsGroups,
+    generateSwitchHostsContent,
     clearError: () => setError(null),
   };
 }

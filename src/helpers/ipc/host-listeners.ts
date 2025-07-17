@@ -197,4 +197,47 @@ export function registerHostListeners() {
       return await hostManagerService.parseSystemHostsContent(content);
     },
   );
+
+  // 文件操作相关的 IPC 处理器
+  ipcMain.handle(
+    "host:import-hosts-file",
+    async (event: IpcMainInvokeEvent, filePath: string): Promise<boolean> => {
+      return await hostManagerService.importHostsConfig(filePath);
+    },
+  );
+
+  ipcMain.handle(
+    "host:import-switchhosts-file",
+    async (event: IpcMainInvokeEvent, filePath: string): Promise<boolean> => {
+      return hostManagerService.importSwitchHostsConfig(filePath);
+    },
+  );
+
+  ipcMain.handle(
+    "host:parse-hosts-groups",
+    async (event: IpcMainInvokeEvent, content: string) => {
+      return hostManagerService.parseHostsGroups(content);
+    },
+  );
+
+  ipcMain.handle(
+    "host:parse-switchhosts-groups",
+    async (event: IpcMainInvokeEvent, content: string) => {
+      return hostManagerService.parseSwitchHostsGroups(content);
+    },
+  );
+
+  ipcMain.handle(
+    "host:generate-switchhosts-content",
+    async (): Promise<string> => {
+      return hostManagerService.generateSwitchHostsCompatibleContent();
+    },
+  );
+
+  ipcMain.handle(
+    "host:generate-hostgenius-content",
+    async (): Promise<string> => {
+      return hostManagerService.generateHostGeniusContent();
+    },
+  );
 }

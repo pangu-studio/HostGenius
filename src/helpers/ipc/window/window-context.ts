@@ -1,14 +1,15 @@
+import { contextBridge, ipcRenderer } from "electron";
 import {
-  WIN_MINIMIZE_CHANNEL,
-  WIN_MAXIMIZE_CHANNEL,
-  WIN_CLOSE_CHANNEL,
+  WINDOW_CLOSE_CHANNEL,
+  WINDOW_MAXIMIZE_CHANNEL,
+  WINDOW_MINIMIZE_CHANNEL,
 } from "./window-channels";
 
 export function exposeWindowContext() {
   const { contextBridge, ipcRenderer } = window.require("electron");
   contextBridge.exposeInMainWorld("electronWindow", {
-    minimize: () => ipcRenderer.invoke(WIN_MINIMIZE_CHANNEL),
-    maximize: () => ipcRenderer.invoke(WIN_MAXIMIZE_CHANNEL),
-    close: () => ipcRenderer.invoke(WIN_CLOSE_CHANNEL),
+    minimize: () => ipcRenderer.invoke(WINDOW_MINIMIZE_CHANNEL),
+    maximize: () => ipcRenderer.invoke(WINDOW_MAXIMIZE_CHANNEL),
+    close: () => ipcRenderer.invoke(WINDOW_CLOSE_CHANNEL),
   });
 }
