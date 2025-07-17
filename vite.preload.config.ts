@@ -4,7 +4,11 @@ import { defineConfig } from "vite";
 export default defineConfig({
   build: {
     rollupOptions: {
-      external: ["better-sqlite3"],
+      external: [
+        "better-sqlite3",
+        "lightningcss-win32-x64-msvc",
+        "lightningcss-darwin-arm64",
+      ],
     },
   },
 });
