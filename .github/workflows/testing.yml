@@ -36,11 +36,11 @@ jobs:
           # npm install lightningcss-darwin-arm64
           # npm install @tailwindcss/oxide-darwin-arm64
       - name: Build
-        run: npm run make
+        run: npm run make && ls ./out/make
       - uses: actions/upload-artifact@v4
         with:
-          name: macos-arm64-lib
-          path: out/make/Host Genius-darwin-1.0.0-arm64.dmg
+          name: macos-arm64-dmg
+          path: out/make/Host Genius-1.0.0-arm64.dmg
 
   build-windows:
     runs-on: windows-latest
