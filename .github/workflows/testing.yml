@@ -33,10 +33,8 @@ jobs:
       - name: Install dependencies
         run: |
           npm install
-          npm install lightningcss-darwin-arm64
-          npm install @tailwindcss/oxide-darwin-arm64
-      - name: Rebuild native modules
-        run: npm run rebuild
+          # npm install lightningcss-darwin-arm64
+          # npm install @tailwindcss/oxide-darwin-arm64
       - name: Build
         run: npm run make
       - uses: actions/upload-artifact@v4
@@ -54,10 +52,10 @@ jobs:
       - name: Install dependencies
         run: |
           npm install
-          npm install lightningcss-win32-x64-msvc
-          npm install @tailwindcss/oxide-win32-x64-msvc
-      - name: Rebuild native modules
-        run: npm run rebuild
+          # npm install lightningcss-win32-x64-msvc
+          # npm install @tailwindcss/oxide-win32-x64-msvc
+      # - name: Rebuild native modules
+      #   run: npm run rebuild
       - name: Build
         run: npm run make
       - uses: actions/upload-artifact@v4
