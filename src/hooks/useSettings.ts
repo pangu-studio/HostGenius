@@ -5,47 +5,81 @@ import { getCurrentTheme, setTheme } from "@/helpers/theme_helpers";
 import { setAppLanguage } from "@/helpers/language_helpers";
 import langs from "@/localization/langs";
 
+interface UserSettings {
+  theme: ThemeMode;
+  language: string;
+}
+
 export function useSettings() {
   const { i18n, t } = useTranslation();
   const [currentTheme, setCurrentTheme] = useState<ThemeMode>("system");
-  const [currentLanguage, setCurrentLanguage] = useState<string>("en");
+  const [currentLanguage, setCurrentLanguage] = useState<string>("zh-CN");
+
+  // 加载设置
+  const loadSettings = useCallback(async (): Promise<UserSettings> => {
+    try {
+      return await window.electronAPI.loadSettings();
+    } catch (error) {
+      console.error("Failed to load settings:", error);
+      return { theme: "system", language: "zh-CN" };
+    }
+  }, []);
+
+  // 保存设置
+  const saveSettings = useCallback(async (settings: UserSettings) => {
+    try {
+      await window.electronAPI.saveSettings(settings);
+    } catch (error) {
+      console.error("Failed to save settings:", error);
+    }
+  }, []);
 
   // 初始化当前设置
   useEffect(() => {
     const initializeSettings = async () => {
       try {
+        const settings = await loadSettings();
         const theme = await getCurrentTheme();
-        setCurrentTheme(theme.local || theme.system);
-        setCurrentLanguage(i18n.language);
+        setCurrentTheme(settings.theme || theme.local || theme.system);
+        setCurrentLanguage(settings.language || i18n.language);
       } catch (error) {
         console.error("Failed to initialize settings:", error);
       }
     };
 
     initializeSettings();
-  }, [i18n.language]);
+  }, [loadSettings, i18n.language]);
 
   // 切换主题
-  const changeTheme = useCallback(async (newTheme: ThemeMode) => {
-    try {
-      await setTheme(newTheme);
-      setCurrentTheme(newTheme);
-    } catch (error) {
-      console.error("Failed to change theme:", error);
-    }
-  }, []);
+  const changeTheme = useCallback(
+    async (newTheme: ThemeMode) => {
+      try {
+        await setTheme(newTheme);
+        setCurrentTheme(newTheme);
+
+        const settings = await loadSettings();
+        await saveSettings({ ...settings, theme: newTheme });
+      } catch (error) {
+        console.error("Failed to change theme:", error);
+      }
+    },
+    [loadSettings, saveSettings],
+  );
 
   // 切换语言
   const changeLanguage = useCallback(
-    (newLanguage: string) => {
+    async (newLanguage: string) => {
       try {
         setAppLanguage(newLanguage, i18n);
         setCurrentLanguage(newLanguage);
+
+        const settings = await loadSettings();
+        await saveSettings({ ...settings, language: newLanguage });
       } catch (error) {
         console.error("Failed to change language:", error);
       }
     },
-    [i18n],
+    [i18n, loadSettings, saveSettings],
   );
 
   // 获取可用主题选项

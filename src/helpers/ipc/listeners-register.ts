@@ -2,14 +2,14 @@ import type { BrowserWindow } from "electron";
 import { registerHostListeners } from "./host-listeners";
 import { addWindowEventListeners } from "./window/window-listeners";
 import { addThemeEventListeners } from "./theme/theme-listeners";
-// import { registerSettingsListeners } from "./settings-listeners";
+import { registerSettingsListeners } from "./settings-listeners";
 import { ipcMain } from "electron";
 
 export default function registerListeners(mainWindow: BrowserWindow) {
   addWindowEventListeners(mainWindow);
   addThemeEventListeners();
   registerHostListeners();
-  // registerSettingsListeners();
+  registerSettingsListeners();
 
   // 注册环境信息监听器
   ipcMain.handle("app:get-platform", () => process.platform);

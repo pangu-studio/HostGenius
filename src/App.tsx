@@ -1,37 +1,47 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
-// import { syncThemeWithLocal } from "./helpers/theme_helpers";
 import { useTranslation } from "react-i18next";
 import "./localization/i18n";
-// import { updateAppLanguage } from "./helpers/language_helpers";
+import { i18nInstance } from "./localization/i18n";
 import { router } from "./routes/router";
 import { RouterProvider } from "@tanstack/react-router";
-// import { SettingsProvider } from "@/components/SettingsProvider";
+import { syncThemeWithLocal } from "./helpers/theme_helpers";
+import { updateAppLanguage } from "./helpers/language_helpers";
 
 function App() {
   const { i18n } = useTranslation();
+  const [isReady, setIsReady] = useState(false);
 
   useEffect(() => {
-    // // 确保 DOM 加载完成后再初始化主题和语言
-    // const initializeApp = () => {
-    //   syncThemeWithLocal();
-    //   updateAppLanguage(i18n);
-    // };
-    // if (document.readyState === "loading") {
-    //   document.addEventListener("DOMContentLoaded", initializeApp);
-    // } else {
-    //   initializeApp();
-    // }
-    // return () => {
-    //   document.removeEventListener("DOMContentLoaded", initializeApp);
-    // };
+    // 等待i18n初始化完成
+    const initializeApp = async () => {
+      try {
+        await i18nInstance;
+        syncThemeWithLocal();
+        await updateAppLanguage(i18n);
+        setIsReady(true);
+      } catch (error) {
+        console.error("Failed to initialize app:", error);
+        setIsReady(true); // 即使失败也要显示应用
+      }
+    };
+
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", initializeApp);
+    } else {
+      initializeApp();
+    }
+
+    return () => {
+      document.removeEventListener("DOMContentLoaded", initializeApp);
+    };
   }, [i18n]);
 
-  return (
-    // <SettingsProvider>
-    <RouterProvider router={router} />
-    // </SettingsProvider>
-  );
+  if (!isReady) {
+    return <div>Loading...</div>;
+  }
+
+  return <RouterProvider router={router} />;
 }
 
 const root = createRoot(document.getElementById("app")!);
