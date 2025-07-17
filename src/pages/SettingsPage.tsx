@@ -22,9 +22,11 @@ import {
   Moon,
   Check,
   Save,
+  AlertTriangle,
 } from "lucide-react";
 import { useSettings } from "@/hooks/useSettings";
 import { ThemeMode } from "@/types/theme-mode";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 export default function SettingsPage() {
   const { t } = useTranslation();
@@ -194,6 +196,13 @@ export default function SettingsPage() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
+              <Alert>
+                <AlertTriangle className="h-4 w-4" />
+                <AlertDescription>
+                  {t("settings.dataManagement.warning")}
+                </AlertDescription>
+              </Alert>
+
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <Button
                   variant="outline"

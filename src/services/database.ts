@@ -53,7 +53,21 @@ export class DatabaseService {
     // 确保数据目录存在
     fs.ensureDirSync(this.dataDir);
 
-    this.dbPath = path.join(this.dataDir, "hosts.db");
+    this.dbPath = path.join(this.dataDir, ".data.db");
+
+    // 兼容性处理：如果存在旧的hosts.db文件，重命名为新的.data.db
+    const oldDbPath = path.join(this.dataDir, "hosts.db");
+    if (fs.existsSync(oldDbPath) && !fs.existsSync(this.dbPath)) {
+      try {
+        fs.renameSync(oldDbPath, this.dbPath);
+        console.log("已将旧数据库文件 hosts.db 重命名为 .data.db");
+      } catch (error) {
+        console.error("重命名数据库文件失败:", error);
+        // 如果重命名失败，使用旧文件路径
+        this.dbPath = oldDbPath;
+      }
+    }
+
     this.db = new Database(this.dbPath);
 
     this.createTables();
