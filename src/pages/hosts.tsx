@@ -1,10 +1,9 @@
 import React, { useState } from "react";
 import { HostGroupList } from "@/components/hosts/HostGroupList";
 import { HostEditor } from "@/components/hosts/HostEditor";
-import { AdminPasswordDialog } from "@/components/hosts/AdminPasswordDialog";
 import { useHosts } from "@/hooks/useHosts";
 import { HostGroup } from "../preload";
-import { Loader2, AlertTriangle, Shield } from "lucide-react";
+import { Loader2, AlertTriangle } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 
@@ -16,9 +15,6 @@ export default function HostsPage() {
     loading,
     error,
     // hasPermissions,
-    adminDialogOpen,
-    setAdminDialogOpen,
-    handleAdminSuccess,
     // clearAdminPermissions,
     // requestAdmin,
     clearError,
@@ -90,11 +86,10 @@ export default function HostsPage() {
       )}
 
       {/* 管理员密码对话框 */}
-      <AdminPasswordDialog
+      {/* <AdminPasswordDialog
         open={adminDialogOpen}
         onOpenChange={setAdminDialogOpen}
-        onSuccess={handleAdminSuccess}
-      />
+      /> */}
     </div>
   );
 }

@@ -4,32 +4,37 @@ import { databaseService } from "@/services/database";
 
 export function registerHostListeners() {
   // 检查权限
-  ipcMain.handle("host:check-permissions", async (): Promise<boolean> => {
-    return await hostManagerService.checkPermissions();
-  });
+  // ipcMain.handle("host:check-permissions", async (): Promise<boolean> => {
+  //   return await hostManagerService.checkPermissions();
+  // });
 
-  // 请求管理员权限
-  ipcMain.handle("host:request-admin", async (): Promise<boolean> => {
-    console.log("请求管理员权限");
-    return await hostManagerService.requestAdminPermissions();
-  });
+  // // 请求管理员权限
+  // ipcMain.handle("host:request-admin", async (): Promise<boolean> => {
+  //   console.log("请求管理员权限");
+  //   return await hostManagerService.requestAdminPermissions();
+  // });
 
-  // 验证管理员密码
-  ipcMain.handle(
-    "host:validate-admin-password",
-    async (event: IpcMainInvokeEvent, password: string) => {
-      return await hostManagerService.validateAdminPassword(password);
-    },
-  );
+  // // 验证管理员密码
+  // ipcMain.handle(
+  //   "host:validate-admin-password",
+  //   async (event: IpcMainInvokeEvent, password: string) => {
+  //     return await hostManagerService.validateAdminPassword(password);
+  //   },
+  // );
 
-  // 清除管理员密码
-  ipcMain.handle("host:clear-admin-password", async (): Promise<void> => {
-    hostManagerService.clearValidatedPassword();
-  });
+  // // 清除管理员密码
+  // ipcMain.handle("host:clear-admin-password", async (): Promise<void> => {
+  //   hostManagerService.clearValidatedPassword();
+  // });
 
   // 读取系统hosts文件
   ipcMain.handle("host:read-system", async (): Promise<string> => {
     return await hostManagerService.readSystemHosts();
+  });
+
+  // 读取原始系统hosts文件（完整内容，未经解析）
+  ipcMain.handle("host:read-raw-system", async (): Promise<string> => {
+    return await hostManagerService.readRawSystemHosts();
   });
 
   // 获取所有分组
@@ -184,4 +189,12 @@ export function registerHostListeners() {
   ipcMain.handle("host:open-data-directory", async (): Promise<void> => {
     await shell.openPath(hostManagerService.getDataDirectory());
   });
+
+  //
+  ipcMain.handle(
+    "host:parseSystemHostsContent",
+    async (event: IpcMainInvokeEvent, content: string): Promise<string> => {
+      return await hostManagerService.parseSystemHostsContent(content);
+    },
+  );
 }

@@ -11,4 +11,19 @@ export default [
     nativeName: "English",
     prefix: "🇺🇸",
   },
+  {
+    key: "pt-BR",
+    nativeName: "Português (Brasil)",
+    prefix: "🇧🇷",
+  },
+  {
+    key: "ja",
+    nativeName: "日本語",
+    prefix: "🇯🇵",
+  },
+  {
+    key: "ko",
+    nativeName: "한국어",
+    prefix: "🇰🇷",
+  },
 ] satisfies Language[];

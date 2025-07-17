@@ -44,21 +44,28 @@ export interface DataInfo {
 }
 
 const electronAPI = {
-  validateAdminPassword: (password: string) => {
-    return ipcRenderer.invoke("host:validate-admin-password", password);
-  },
-  // 权限管理
-  checkPermissions: (): Promise<boolean> =>
-    ipcRenderer.invoke("host:check-permissions"),
-  requestAdmin: (): Promise<boolean> => {
-    console.log("aa");
-    // 请求管理员权限
-    return ipcRenderer.invoke("host:request-admin");
-  },
+  // validateAdminPassword: (password: string) => {
+  //   return ipcRenderer.invoke("host:validate-admin-password", password);
+  // },
+  // // 权限管理
+  // checkPermissions: (): Promise<boolean> =>
+  //   ipcRenderer.invoke("host:check-permissions"),
+  // requestAdmin: (): Promise<boolean> => {
+  //   console.log("aa");
+  //   // 请求管理员权限
+  //   return ipcRenderer.invoke("host:request-admin");
+  // },
 
   // 系统hosts操作
   readSystemHosts: (): Promise<string> =>
     ipcRenderer.invoke("host:read-system"),
+  // 读取原始系统hosts文件（未经解析的完整内容）
+  readRawSystemHosts: (): Promise<string> =>
+    ipcRenderer.invoke("host:read-raw-system"),
+
+  // 获取系统hosts内容
+  parseSystemHostsContent: (content: string): Promise<string> =>
+    ipcRenderer.invoke("host:parseSystemHostsContent", content),
 
   // 分组管理
   getGroups: (): Promise<HostGroup[]> => ipcRenderer.invoke("host:get-groups"),

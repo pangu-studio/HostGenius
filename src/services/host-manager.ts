@@ -39,6 +39,9 @@ export class HostManagerService {
     this.sudoOptions = {
       name: "Host Genius",
     };
+
+    // 初始化系统hosts内容
+    this.initSystemHostsGroup();
   }
 
   private getSystemHostsPath(): string {
@@ -55,30 +58,6 @@ export class HostManagerService {
       case "linux":
       default:
         return "/etc/hosts";
-    }
-  }
-
-  // 验证管理员密码 - 使用 sudo-prompt
-  async validateAdminPassword(password?: string): Promise<AdminAuthResult> {
-    log.info("Validating admin password using sudo-prompt");
-
-    try {
-      // 使用 sudo-prompt 测试管理员权限
-      const testCommand =
-        process.platform === "win32" ? "echo test" : "echo test";
-
-      await this.execWithSudo([testCommand]);
-
-      return {
-        success: true,
-        message: "管理员权限验证成功",
-      };
-    } catch (error) {
-      log.error("Admin validation failed:", error);
-      return {
-        success: false,
-        message: "权限验证失败或用户取消授权",
-      };
     }
   }
 
@@ -160,6 +139,320 @@ export class HostManagerService {
     }
   }
 
+  /**
+   * 初始化系统hosts分组内容
+   */
+  private async initSystemHostsGroup(): Promise<void> {
+    try {
+      const systemHostsContent = await this.readAndParseSystemHosts();
+      const systemGroup = databaseService.getGroupByName("系统Hosts");
+
+      if (systemGroup && systemHostsContent !== systemGroup.content) {
+        databaseService.updateGroup(systemGroup.id, {
+          content: systemHostsContent,
+        });
+      }
+    } catch (error) {
+      log.warn("初始化系统hosts分组失败:", error);
+    }
+  }
+
+  /**
+   * 读取并解析系统hosts文件内容
+   */
+  private async readAndParseSystemHosts(): Promise<string> {
+    try {
+      if (!fs.existsSync(this.hostFilePath)) {
+        return "";
+      }
+
+      const content = await fs.readFile(this.hostFilePath, "utf8");
+      return this.parseSystemHostsContent(content);
+    } catch (error) {
+      log.warn("Failed to read system hosts file:", error);
+      return "";
+    }
+  }
+
+  /**
+   * 解析系统hosts内容，提取基础配置（排除SwitchHosts和HostGenius管理的部分）
+   */
+  public parseSystemHostsContent(content: string): string {
+    const lines = content.split("\n");
+    const systemLines: string[] = [];
+    let inManagedSection = false;
+
+    for (const line of lines) {
+      const trimmedLine = line.trim();
+
+      // 检测管理工具内容开始标记（支持SwitchHosts和HostGenius）
+      if (
+        trimmedLine.includes("SWITCHHOSTS_CONTENT_START") ||
+        trimmedLine.includes("HOSTGENIUS_CONTENT_START")
+      ) {
+        inManagedSection = true;
+        continue;
+      }
+
+      // 检测管理工具内容结束标记
+      if (
+        trimmedLine.includes("SWITCHHOSTS_CONTENT_END") ||
+        trimmedLine.includes("HOSTGENIUS_CONTENT_END")
+      ) {
+        inManagedSection = false;
+        continue;
+      }
+
+      // 如果不在管理工具的区域内，保留该行
+      if (!inManagedSection) {
+        systemLines.push(line);
+      }
+    }
+
+    return systemLines.join("\n").trim();
+  }
+
+  /**
+   * 从SwitchHosts或HostGenius格式的hosts文件中提取分组
+   */
+  parseHostsGroups(
+    content: string,
+  ): Array<{ name: string; content: string; enabled: boolean }> {
+    const groups: Array<{ name: string; content: string; enabled: boolean }> =
+      [];
+    const lines = content.split("\n");
+
+    let currentGroup: {
+      name: string;
+      content: string[];
+      enabled: boolean;
+    } | null = null;
+    let inManagedSection = false;
+    let managedSectionType: "switchhosts" | "hostgenius" | null = null;
+
+    for (const line of lines) {
+      const trimmedLine = line.trim();
+
+      // 检测管理工具内容开始
+      if (trimmedLine.includes("SWITCHHOSTS_CONTENT_START")) {
+        inManagedSection = true;
+        managedSectionType = "switchhosts";
+        continue;
+      }
+      if (trimmedLine.includes("HOSTGENIUS_CONTENT_START")) {
+        inManagedSection = true;
+        managedSectionType = "hostgenius";
+        continue;
+      }
+
+      // 检测管理工具内容结束
+      if (
+        trimmedLine.includes("SWITCHHOSTS_CONTENT_END") ||
+        trimmedLine.includes("HOSTGENIUS_CONTENT_END")
+      ) {
+        if (currentGroup) {
+          groups.push({
+            name: currentGroup.name,
+            content: currentGroup.content.join("\n").trim(),
+            enabled: currentGroup.enabled,
+          });
+        }
+        inManagedSection = false;
+        managedSectionType = null;
+        break;
+      }
+
+      if (!inManagedSection) continue;
+
+      // 检测分组标记
+      if (trimmedLine.startsWith("#") && trimmedLine.includes("---")) {
+        // 保存上一个分组
+        if (currentGroup) {
+          groups.push({
+            name: currentGroup.name,
+            content: currentGroup.content.join("\n").trim(),
+            enabled: currentGroup.enabled,
+          });
+        }
+
+        // 解析分组名称和状态
+        let groupName = trimmedLine.replace(/[#\-\s]/g, "").trim();
+        let enabled = true;
+
+        // HostGenius格式支持更详细的状态标记
+        if (managedSectionType === "hostgenius") {
+          const statusMatch = trimmedLine.match(
+            /\[(disabled|off|enabled|on)\]/i,
+          );
+          if (statusMatch) {
+            enabled = !["disabled", "off"].includes(
+              statusMatch[1].toLowerCase(),
+            );
+            groupName = groupName
+              .replace(/\[(disabled|off|enabled|on)\]/gi, "")
+              .trim();
+          }
+        } else {
+          // SwitchHosts格式
+          enabled =
+            !trimmedLine.includes("[disabled]") &&
+            !trimmedLine.includes("[off]");
+        }
+
+        if (!groupName) {
+          groupName = `分组${groups.length + 1}`;
+        }
+
+        currentGroup = {
+          name: groupName,
+          content: [],
+          enabled,
+        };
+      } else if (currentGroup) {
+        // 添加到当前分组
+        currentGroup.content.push(line);
+      } else if (trimmedLine && !trimmedLine.startsWith("#")) {
+        // 没有明确分组标记的内容，创建默认分组
+        if (!currentGroup) {
+          const defaultName =
+            managedSectionType === "hostgenius"
+              ? "HostGenius导入"
+              : "SwitchHosts导入";
+          currentGroup = {
+            name: defaultName,
+            content: [],
+            enabled: true,
+          };
+        }
+        currentGroup.content.push(line);
+      }
+    }
+
+    // 处理最后一个分组
+    if (currentGroup) {
+      groups.push({
+        name: currentGroup.name,
+        content: currentGroup.content.join("\n").trim(),
+        enabled: currentGroup.enabled,
+      });
+    }
+
+    return groups.filter((group) => group.content.trim());
+  }
+
+  /**
+   * 导入SwitchHosts或HostGenius格式的配置文件
+   */
+  async importHostsConfig(filePath: string): Promise<boolean> {
+    try {
+      if (!fs.existsSync(filePath)) {
+        return false;
+      }
+
+      const content = await fs.readFile(filePath, "utf8");
+      const groups = this.parseHostsGroups(content);
+
+      for (const group of groups) {
+        // 检查是否已存在同名分组
+        const existingGroup = databaseService.getGroupByName(group.name);
+        if (existingGroup && !existingGroup.isSystem) {
+          // 更新现有分组
+          databaseService.updateGroup(existingGroup.id, {
+            content: group.content,
+            enabled: group.enabled,
+          });
+        } else if (!existingGroup) {
+          // 创建新分组
+          databaseService.createGroup({
+            name: group.name,
+            description: `从配置文件导入的hosts规则`,
+            content: group.content,
+            enabled: group.enabled,
+            isSystem: false,
+          });
+        }
+      }
+
+      return true;
+    } catch (error) {
+      log.error("Failed to import hosts config:", error);
+      return false;
+    }
+  }
+
+  /**
+   * 生成兼容SwitchHosts格式的hosts文件内容
+   */
+  generateSwitchHostsCompatibleContent(): string {
+    const systemGroup = databaseService.getGroupByName("系统Hosts");
+    const otherGroups = databaseService
+      .getAllGroups()
+      .filter((g) => !g.isSystem && g.enabled);
+
+    const sections: string[] = [];
+
+    // 添加系统基础配置
+    if (systemGroup && systemGroup.content.trim()) {
+      sections.push(systemGroup.content.trim());
+    }
+
+    // 添加SwitchHosts兼容的分组内容
+    if (otherGroups.length > 0) {
+      sections.push("# --- SWITCHHOSTS_CONTENT_START ---");
+
+      for (const group of otherGroups) {
+        if (group.content.trim()) {
+          const statusSuffix = group.enabled ? "" : " [disabled]";
+          sections.push(`# --- ${group.name}${statusSuffix} ---`);
+          sections.push(group.content.trim());
+          sections.push("");
+        }
+      }
+
+      sections.push("# --- SWITCHHOSTS_CONTENT_END ---");
+    }
+
+    return sections.join("\n\n");
+  }
+
+  /**
+   * 生成HostGenius专有格式的hosts文件内容
+   */
+  generateHostGeniusContent(): string {
+    const systemGroup = databaseService.getGroupByName("系统Hosts");
+    const otherGroups = databaseService
+      .getAllGroups()
+      .filter((g) => !g.isSystem);
+
+    const sections: string[] = [];
+
+    // 添加系统基础配置
+    if (systemGroup && systemGroup.content.trim()) {
+      sections.push(systemGroup.content.trim());
+    }
+
+    // 添加HostGenius格式的分组内容
+    if (otherGroups.length > 0) {
+      sections.push("# --- HOSTGENIUS_CONTENT_START ---");
+
+      for (const group of otherGroups) {
+        if (group.content.trim()) {
+          const statusSuffix = group.enabled ? " [enabled]" : " [disabled]";
+          sections.push(`# --- ${group.name}${statusSuffix} ---`);
+          if (group.description) {
+            sections.push(`# Description: ${group.description}`);
+          }
+          sections.push(group.content.trim());
+          sections.push("");
+        }
+      }
+
+      sections.push("# --- HOSTGENIUS_CONTENT_END ---");
+    }
+
+    return sections.join("\n\n");
+  }
+
   // 读取系统hosts文件
   async readSystemHosts(): Promise<string> {
     try {
@@ -167,15 +460,34 @@ export class HostManagerService {
       const content = await fs.readFile(this.hostFilePath, "utf-8");
 
       // 更新数据库中的系统hosts
+      const systemHostsContent = this.parseSystemHostsContent(content);
       const systemGroup = databaseService.getGroupByName("系统Hosts");
-      if (systemGroup && systemGroup.content !== content) {
-        databaseService.updateGroup(systemGroup.id, { content });
+      if (systemGroup && systemGroup.content !== systemHostsContent) {
+        databaseService.updateGroup(systemGroup.id, {
+          content: systemHostsContent,
+        });
       }
 
       log.info("Successfully read hosts file, length:", content.length);
       return content;
     } catch (error) {
       log.error("Failed to read system hosts file:", error);
+      throw new Error("无法读取系统hosts文件，请检查权限");
+    }
+  }
+
+  // 读取原始系统hosts文件（完整内容，不进行任何解析）
+  async readRawSystemHosts(): Promise<string> {
+    try {
+      if (!fs.existsSync(this.hostFilePath)) {
+        return "";
+      }
+
+      const content = await fs.readFile(this.hostFilePath, "utf-8");
+      log.info("Successfully read raw hosts file, length:", content.length);
+      return content;
+    } catch (error) {
+      log.error("Failed to read raw system hosts file:", error);
       throw new Error("无法读取系统hosts文件，请检查权限");
     }
   }
@@ -220,7 +532,7 @@ export class HostManagerService {
 
   // 应用所有启用的分组到系统hosts
   async applyHosts(): Promise<void> {
-    const mergedContent = databaseService.getMergedHosts();
+    const mergedContent = this.generateHostGeniusContent();
     await this.writeSystemHosts(mergedContent);
   }
 
@@ -255,9 +567,6 @@ export class HostManagerService {
       enabled?: boolean;
     },
   ): Promise<boolean> {
-    //合并hosts内容ssss
-    // if (data.content) {
-    // }
     let result = false;
     databaseService.updateGroup(id, data);
 
@@ -486,6 +795,174 @@ export class HostManagerService {
     } catch (error) {
       console.error("导入应用数据失败:", error);
       throw new Error("导入应用数据失败");
+    }
+  }
+
+  /**
+   * 从SwitchHosts或HostGenius格式的hosts文件中提取分组
+   */
+  parseSwitchHostsGroups(
+    content: string,
+  ): Array<{ name: string; content: string; enabled: boolean }> {
+    const groups: Array<{ name: string; content: string; enabled: boolean }> =
+      [];
+    const lines = content.split("\n");
+
+    let currentGroup: {
+      name: string;
+      content: string[];
+      enabled: boolean;
+    } | null = null;
+    let inManagedSection = false;
+    let managedSectionType: "switchhosts" | "hostgenius" | null = null;
+
+    for (const line of lines) {
+      const trimmedLine = line.trim();
+
+      // 检测管理工具内容开始
+      if (trimmedLine.includes("SWITCHHOSTS_CONTENT_START")) {
+        inManagedSection = true;
+        managedSectionType = "switchhosts";
+        continue;
+      }
+      if (trimmedLine.includes("HOSTGENIUS_CONTENT_START")) {
+        inManagedSection = true;
+        managedSectionType = "hostgenius";
+        continue;
+      }
+
+      // 检测管理工具内容结束
+      if (
+        trimmedLine.includes("SWITCHHOSTS_CONTENT_END") ||
+        trimmedLine.includes("HOSTGENIUS_CONTENT_END")
+      ) {
+        if (currentGroup) {
+          groups.push({
+            name: currentGroup.name,
+            content: currentGroup.content.join("\n").trim(),
+            enabled: currentGroup.enabled,
+          });
+        }
+        inManagedSection = false;
+        managedSectionType = null;
+        break;
+      }
+
+      if (!inManagedSection) continue;
+
+      // 检测分组标记
+      if (trimmedLine.startsWith("#") && trimmedLine.includes("---")) {
+        // 保存上一个分组
+        if (currentGroup) {
+          groups.push({
+            name: currentGroup.name,
+            content: currentGroup.content.join("\n").trim(),
+            enabled: currentGroup.enabled,
+          });
+        }
+
+        // 解析分组名称和状态
+        let groupName = trimmedLine.replace(/[#\-\s]/g, "").trim();
+        let enabled = true;
+
+        // HostGenius格式支持更详细的状态标记
+        if (managedSectionType === "hostgenius") {
+          const statusMatch = trimmedLine.match(
+            /\[(disabled|off|enabled|on)\]/i,
+          );
+          if (statusMatch) {
+            enabled = !["disabled", "off"].includes(
+              statusMatch[1].toLowerCase(),
+            );
+            groupName = groupName
+              .replace(/\[(disabled|off|enabled|on)\]/gi, "")
+              .trim();
+          }
+        } else {
+          // SwitchHosts格式
+          enabled =
+            !trimmedLine.includes("[disabled]") &&
+            !trimmedLine.includes("[off]");
+        }
+
+        if (!groupName) {
+          groupName = `分组${groups.length + 1}`;
+        }
+
+        currentGroup = {
+          name: groupName,
+          content: [],
+          enabled,
+        };
+      } else if (currentGroup) {
+        // 添加到当前分组
+        currentGroup.content.push(line);
+      } else if (trimmedLine && !trimmedLine.startsWith("#")) {
+        // 没有明确分组标记的内容，创建默认分组
+        if (!currentGroup) {
+          const defaultName =
+            managedSectionType === "hostgenius"
+              ? "HostGenius导入"
+              : "SwitchHosts导入";
+          currentGroup = {
+            name: defaultName,
+            content: [],
+            enabled: true,
+          };
+        }
+        currentGroup.content.push(line);
+      }
+    }
+
+    // 处理最后一个分组
+    if (currentGroup) {
+      groups.push({
+        name: currentGroup.name,
+        content: currentGroup.content.join("\n").trim(),
+        enabled: currentGroup.enabled,
+      });
+    }
+
+    return groups.filter((group) => group.content.trim());
+  }
+
+  /**
+   * 导入SwitchHosts或HostGenius格式的配置文件
+   */
+  importSwitchHostsConfig(filePath: string): boolean {
+    try {
+      if (!fs.existsSync(filePath)) {
+        return false;
+      }
+
+      const content = fs.readFileSync(filePath, "utf8");
+      const groups = this.parseSwitchHostsGroups(content);
+
+      for (const group of groups) {
+        // 检查是否已存在同名分组
+        const existingGroup = databaseService.getGroupByName(group.name);
+        if (existingGroup && !existingGroup.isSystem) {
+          // 更新现有分组
+          this.updateGroup(existingGroup.id, {
+            content: group.content,
+            enabled: group.enabled,
+          });
+        } else if (!existingGroup) {
+          // 创建新分组
+          this.createGroup({
+            name: group.name,
+            description: `从配置文件导入的hosts规则`,
+            content: group.content,
+            enabled: group.enabled,
+            isSystem: false,
+          });
+        }
+      }
+
+      return true;
+    } catch (error) {
+      console.error("Failed to import hosts config:", error);
+      return false;
     }
   }
 }

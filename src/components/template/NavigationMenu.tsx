@@ -5,13 +5,11 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import {
-  Home,
   Network,
   Settings,
-  Info,
-  Menu,
   ChevronLeft,
   ChevronRight,
+  Monitor,
 } from "lucide-react";
 import { cn } from "@/utils/tailwind";
 
@@ -22,8 +20,8 @@ export default function NavigationMenu() {
   const navigationItems = [
     {
       to: "/",
-      icon: Home,
-      label: "首页",
+      icon: Monitor,
+      label: t("titleHomePage"),
       key: "home",
     },
     {
@@ -33,16 +31,10 @@ export default function NavigationMenu() {
       key: "hosts",
     },
     {
-      to: "/second-page",
+      to: "/settings",
       icon: Settings,
-      label: "设置",
+      label: t("settings.title"),
       key: "settings",
-    },
-    {
-      to: "/about",
-      icon: Info,
-      label: "关于",
-      key: "about",
     },
   ];
 

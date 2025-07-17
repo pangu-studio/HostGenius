@@ -1,17 +1,16 @@
 import { useState, useEffect, useCallback } from "react";
-import { toast } from "sonner";
+// import { toast } from "sonner";
 import { HostGroup, HostEntry, BackupInfo } from "../preload";
-import { read } from "fs";
 
 export function useHosts() {
   const [groups, setGroups] = useState<HostGroup[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [hasPermissions, setHasPermissions] = useState(false);
+  // const [hasPermissions, setHasPermissions] = useState(false);
   const [adminDialogOpen, setAdminDialogOpen] = useState(false);
-  const [pendingAction, setPendingAction] = useState<
-    (() => Promise<void>) | null
-  >(null);
+  // const [pendingAction, setPendingAction] = useState<
+  //   (() => Promise<void>) | null
+  // >(null);
 
   const [hostEntry, setHostEntry] = useState<HostEntry[]>([]);
 
@@ -25,38 +24,6 @@ export function useHosts() {
       throw err;
     }
   }, []);
-  // 检查权限
-  const checkPermissions = useCallback(async () => {
-    try {
-      const result = await window.electronAPI.checkPermissions();
-      setHasPermissions(result);
-      console.log(result);
-      return result;
-    } catch (err) {
-      setError("检查权限失败");
-      console.log(err);
-      return false;
-    }
-  }, []);
-
-  // 请求管理员权限 - 显示密码对话框
-  const requestAdmin = useCallback(async (): Promise<boolean> => {
-    return new Promise((resolve) => {
-      setPendingAction(() => async () => {
-        resolve(true);
-      });
-      setAdminDialogOpen(true);
-    });
-  }, []);
-
-  // 处理密码验证成功
-  const handleAdminSuccess = useCallback(async () => {
-    setHasPermissions(true);
-    if (pendingAction) {
-      await pendingAction();
-      setPendingAction(null);
-    }
-  }, [pendingAction]);
 
   // 加载分组
   const loadGroups = useCallback(async () => {
@@ -67,6 +34,7 @@ export function useHosts() {
       setGroups(result);
     } catch (err) {
       setError("加载分组失败");
+      throw err;
     } finally {
       setLoading(false);
     }
@@ -168,17 +136,6 @@ export function useHosts() {
       setError("应用配置失败");
       return false;
     }
-  }, [hasPermissions, requestAdmin]);
-
-  // 清除管理员权限
-  const clearAdminPermissions = useCallback(async () => {
-    try {
-      await window.electronAPI.clearAdminPassword();
-      setHasPermissions(false);
-      toast.success("管理员权限已清除");
-    } catch (err) {
-      console.error("清除权限失败:", err);
-    }
   }, []);
 
   // 解析hosts内容
@@ -209,27 +166,38 @@ export function useHosts() {
 
   // 初始化
   useEffect(() => {
-    // checkPermissions();
-    loadGroups();
-  }, [loadGroups]);
+    (async () => {
+      try {
+        await loadGroups();
+        console.log("分组加载成功", groups);
+        if (groups === undefined || (groups && groups.length === 0)) {
+          // 初始化系统hosts
+          // 如果没有分组，尝试读取系统hosts
 
-  // useEffect(() => {
-  //   readSystemHosts();
-  // }, [readSystemHosts]);
+          const content = await window.electronAPI.readSystemHosts();
+          console.log("系统hosts内容:", hostEntry);
+
+          console.log("尝试解析系统hosts内容", content);
+          const parsed =
+            await window.electronAPI.parseSystemHostsContent(content);
+          console.log("解析后的hosts内容:", parsed);
+        }
+      } catch (err) {
+        setError("初始化失败: " + (err as Error).message);
+        console.log("初始化失败:", err);
+        throw err;
+      }
+    })();
+  }, [loadGroups]);
 
   return {
     groups,
     hostEntry,
     loading,
     error,
-    hasPermissions,
     adminDialogOpen,
     setAdminDialogOpen,
-    checkPermissions,
     readSystemHosts,
-    requestAdmin,
-    handleAdminSuccess,
-    clearAdminPermissions,
     loadGroups,
     createGroup,
     updateGroup,

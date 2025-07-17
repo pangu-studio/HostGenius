@@ -2,7 +2,6 @@ import Database from "better-sqlite3";
 import path from "path";
 import os from "os";
 import fs from "fs-extra";
-import { app } from "electron";
 
 export interface HostGroup {
   id: string;
