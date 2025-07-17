@@ -15,8 +15,8 @@ const config: ForgeConfig = {
     name: "Host Genius",
     extraResource: [
       "./node_modules/better-sqlite3",
-      "./node_modules/@tailwindcss/oxide*",
-      "./node_modules/lightningcss*",
+      // "./node_modules/@tailwindcss/oxide-*",
+      // "./node_modules/lightningcss*",
     ],
   },
   rebuildConfig: {},
