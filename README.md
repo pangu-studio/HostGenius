@@ -3,48 +3,55 @@
 🎉 **We're excited to announce the first stable release of Host Genius!**
 
 Host Genius is a powerful and user-friendly hosts file management tool that makes managing your system's hosts configuration effortless. Built with modern technologies and designed for cross-platform compatibility.
+
 ![overview img](./images/overview_en.png)
 
 ![setting img](./images/settings.png)
 
-
 ## ✨ Key Features
 
 ### 🗂️ **Group Management**
+
 - **Create and organize host groups**: Categorize your hosts configurations for better organization
 - **Enable/disable groups**: Easily toggle entire groups on or off without losing your configurations
 - **Rich metadata**: Add descriptions and track creation/modification dates for each group
 
 ### 🔧 **Advanced Host Management**
+
 - **Intelligent parsing**: Automatically parse and validate hosts file entries
 - **Real-time preview**: See exactly how your changes will affect the system
 - **Content validation**: Built-in validation to prevent malformed entries
 - **Bulk operations**: Import, export, and manage multiple host entries efficiently
 
 ### 🔄 **Import/Export Capabilities**
+
 - **SwitchHosts compatibility**: Seamlessly import configurations from SwitchHosts
 - **Flexible export options**: Export individual groups or entire configurations
 - **Multiple format support**: Compatible with various hosts file formats
 
 ### 🔒 **System Integration**
+
 - **Secure system access**: Intelligent permission handling for system hosts file modifications
 - **Automatic backups**: Create automatic backups before any system changes
 - **DNS cache management**: Automatically flush DNS cache after applying changes
 - **Cross-platform support**: Works seamlessly on Windows, macOS, and Linux
 
 ### 📊 **System Hosts Viewer**
+
 - **Dual view modes**: Switch between text and table views for better readability
 - **Advanced search**: Search through IP addresses, domains, and comments
 - **Real-time statistics**: View file statistics including total lines, host entries, and more
 - **Read-only safety**: Safe viewing of system hosts without accidental modifications
 
 ### 🎨 **Modern User Experience**
+
 - **Clean interface**: Intuitive and modern UI built with React and Tailwind CSS
 - **Dark/Light themes**: Choose your preferred theme or follow system settings
 - **Multi-language support**: Available in English, Chinese (Simplified), Portuguese, Japanese, and Korean
 - **Responsive design**: Optimized for different screen sizes and resolutions
 
 ### 💾 **Data Management**
+
 - **Local storage**: All data stored locally for privacy and security
 - **Backup system**: Comprehensive backup and restore functionality
 - **Version history**: Track changes with built-in version control
@@ -67,6 +74,7 @@ Host Genius is a powerful and user-friendly hosts file management tool that make
 ## 🔮 **What's Next?**
 
 We're already working on exciting features for future releases:
+
 - Cloud synchronization capabilities
 - Advanced rule templates
 - Plugin system for extensibility
