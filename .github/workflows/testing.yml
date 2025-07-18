@@ -28,19 +28,19 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
+      - name: Get package version
+        run: echo "PACKAGE_VERSION=$(node -p "require('./package.json').version")" >> $GITHUB_ENV
       - name: Clear npm cache
         run: npm cache clean --force
       - name: Install dependencies
         run: |
           npm install
-          # npm install lightningcss-darwin-arm64
-          # npm install @tailwindcss/oxide-darwin-arm64
       - name: Build
         run: npm run make && ls ./out/make
       - uses: actions/upload-artifact@v4
         with:
-          name: macos-arm64-dmg
-          path: out/make/Host Genius-1.0.0-arm64.dmg
+          name: macos-arm64-zip
+          path: out/make/zip/darwin/arm64/Host Genius-darwin-arm64-${{ env.PACKAGE_VERSION }}.zip
 
   build-windows:
     runs-on: windows-latest
@@ -49,6 +49,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
+      - name: Get package version
+        run: echo "PACKAGE_VERSION=$(node -p "require('./package.json').version")" >> $env:GITHUB_ENV
       - name: Install dependencies
         run: |
           npm install
@@ -61,7 +63,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: windows-x64-lib
-          path: out/make/squirrel.windows/x64/Host Genius-1.0.0 Setup.exe
+          path: out/make/squirrel.windows/x64/Host Genius-${{ env.PACKAGE_VERSION }} Setup.exe
 
   test-e2e:
     timeout-minutes: 10
