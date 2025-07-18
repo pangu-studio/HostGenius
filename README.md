@@ -3,6 +3,8 @@
 🎉 **We're excited to announce the first stable release of Host Genius!**
 
 Host Genius is a powerful and user-friendly hosts file management tool that makes managing your system's hosts configuration effortless. Built with modern technologies and designed for cross-platform compatibility.
+![overview img](/images/overview_en.png)
+
 
 ## ✨ Key Features
 
