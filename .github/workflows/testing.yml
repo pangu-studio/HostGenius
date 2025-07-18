@@ -41,10 +41,6 @@ jobs:
           APPLE_ID: ${{ secrets.APPLE_ID }}
           APPLE_PASSWORD: ${{ secrets.APPLE_ID_PASSWORD }}
           APPLE_TEAM_ID: ${{ secrets.TEAM_ID }}
-      - uses: actions/upload-artifact@v4
-        with:
-          name: macos-arm64-zip
-          path: out/Host\ Genius-darwin-arm64/Host\ Genius.tar.gz
 
   build-windows:
     runs-on: windows-latest
@@ -64,10 +60,6 @@ jobs:
       #   run: npm run rebuild
       - name: Build
         run: npm run make
-      - uses: actions/upload-artifact@v4
-        with:
-          name: windows-x64-lib
-          path: out/make/squirrel.windows/x64/Host Genius-${{ env.PACKAGE_VERSION }} Setup.exe
 
   test-e2e:
     timeout-minutes: 10
