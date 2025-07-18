@@ -36,7 +36,11 @@ jobs:
         run: |
           npm install
       - name: Build
-        run: npm run package && cd out/Host\ Genius-darwin-arm64 && tar cvf Host\ Genius.tar.gz Host\ Genius.app
+        run: npm run make
+        env:
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_PASSWORD: ${{ secrets.APPLE_ID_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.TEAM_ID }}
       - uses: actions/upload-artifact@v4
         with:
           name: macos-arm64-zip

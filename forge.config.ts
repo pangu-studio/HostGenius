@@ -11,10 +11,17 @@ import { copy, mkdirs } from "fs-extra";
 
 const config: ForgeConfig = {
   packagerConfig: {
-    // osxSign: {
-    //   ignore: ["Contents/Resources/better-sqlite3"],
-    // },
-    asar: true,
+    osxSign: {
+      identity: process.env.APPLE_IDENTITY,
+      // ignore: ["Contents/Resources/better-sqlite3"],
+    },
+    osxNotarize: {
+      appleId: process.env.APPLE_ID!,
+      appleIdPassword: process.env.APPLE_ID_PASSWORD!,
+      teamId: process.env.APPLE_TEAM_ID!,
+    },
+    appBundleId: "studio.pangu.hostgenius",
+    asar: false,
     name: "Host Genius",
     extraResource: ["./node_modules/better-sqlite3"],
     icon: "./src/assets/icon/icon.icns",
@@ -82,13 +89,13 @@ const config: ForgeConfig = {
     new MakerZIP({}, ["darwin"]),
     new MakerRpm({}),
     new MakerDeb({}),
-    // {
-    //   name: "@electron-forge/maker-dmg",
-    //   config: {
-    //     background: "./src/assets/dmg-background.png",
-    //     format: "ULFO",
-    //   },
-    // },
+    {
+      name: "@electron-forge/maker-dmg",
+      config: {
+        background: "./src/assets/dmg-background.png",
+        format: "ULFO",
+      },
+    },
   ],
   plugins: [
     new VitePlugin({

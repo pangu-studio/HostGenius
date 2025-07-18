@@ -19,14 +19,15 @@ function installPlatformDeps() {
         execSync("npm install --no-save @tailwindcss/oxide-darwin-arm64", {
           stdio: "inherit",
         });
-      } else {
-        execSync("npm install --no-save lightningcss-darwin-x64", {
-          stdio: "inherit",
-        });
-        execSync("npm install --no-save @tailwindcss/oxide-darwin-x64", {
-          stdio: "inherit",
-        });
-      }
+      } 
+      // else {
+      //   execSync("npm install --no-save lightningcss-darwin-x64", {
+      //     stdio: "inherit",
+      //   });
+      //   execSync("npm install --no-save @tailwindcss/oxide-darwin-x64", {
+      //     stdio: "inherit",
+      //   });
+      // }
     } else if (platform === "win32") {
       execSync("npm install --no-save lightningcss-win32-x64-msvc", {
         stdio: "inherit",
