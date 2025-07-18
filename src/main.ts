@@ -5,9 +5,19 @@ import {
   installExtension,
   REACT_DEVELOPER_TOOLS,
 } from "electron-devtools-installer";
+import { updateElectronApp, UpdateSourceType } from "update-electron-app";
 
 const inDevelopment = process.env.NODE_ENV === "development";
-
+const updateServer = process.env.UPDATE_SERVER || "https://update.pangu.studio";
+ipcMain.handle("get-app-version", () => {
+  return app.getVersion();
+});
+updateElectronApp({
+  updateSource: {
+    type: UpdateSourceType.StaticStorage,
+    baseUrl: `${updateServer}/host-genius/${process.platform}/${process.arch}`,
+  },
+});
 // 设置应用名称，覆盖默认 "Electron"
 app.setName("Host Genius");
 let mainWindow: BrowserWindow | null;

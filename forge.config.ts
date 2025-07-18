@@ -11,6 +11,9 @@ import { copy, mkdirs } from "fs-extra";
 
 const config: ForgeConfig = {
   packagerConfig: {
+    osxSign: {
+      ignore: ["Contents/Resources/better-sqlite3"],
+    },
     asar: true,
     name: "Host Genius",
     extraResource: ["./node_modules/better-sqlite3"],
@@ -27,18 +30,18 @@ const config: ForgeConfig = {
       ];
 
       // Copy platform-specific packages if they exist
-      const platformPackages = [
-        "@tailwindcss/oxide-darwin-arm64",
-        "@tailwindcss/oxide-darwin-x64",
-        "@tailwindcss/oxide-win32-x64-msvc",
-        "@tailwindcss/oxide-linux-x64-gnu",
-        "@tailwindcss/oxide-linux-arm64-gnu",
-        "lightningcss-darwin-arm64",
-        "lightningcss-darwin-x64",
-        "lightningcss-win32-x64-msvc",
-        "lightningcss-linux-x64-gnu",
-        "lightningcss-linux-arm64-gnu",
-      ];
+      // const platformPackages = [
+      //   "@tailwindcss/oxide-darwin-arm64",
+      //   "@tailwindcss/oxide-darwin-x64",
+      //   "@tailwindcss/oxide-win32-x64-msvc",
+      //   "@tailwindcss/oxide-linux-x64-gnu",
+      //   "@tailwindcss/oxide-linux-arm64-gnu",
+      //   "lightningcss-darwin-arm64",
+      //   "lightningcss-darwin-x64",
+      //   "lightningcss-win32-x64-msvc",
+      //   "lightningcss-linux-x64-gnu",
+      //   "lightningcss-linux-arm64-gnu",
+      // ];
 
       // __dirname isn't accessible from here
       const dirnamePath: string = ".";
@@ -47,27 +50,30 @@ const config: ForgeConfig = {
 
       // Copy all required packages
       await Promise.all(
-        [...requiredNativePackages, ...platformPackages].map(
-          async (packageName) => {
-            const sourcePath = join(sourceNodeModulesPath, packageName);
-            const destPath = join(destNodeModulesPath, packageName);
+        // [...requiredNativePackages, ...platformPackages].map(
+        [...requiredNativePackages].map(async (packageName) => {
+          const sourcePath = join(sourceNodeModulesPath, packageName);
+          const destPath = join(destNodeModulesPath, packageName);
 
-            try {
-              await mkdirs(dirname(destPath));
-              await copy(sourcePath, destPath, {
-                preserveTimestamps: true,
-              });
-            } catch (error) {
-              // Ignore errors for optional platform-specific packages
-              if (!platformPackages.includes(packageName)) {
-                throw error;
-              }
-              console.warn(
-                `Optional package ${packageName} not found, skipping...`,
-              );
-            }
-          },
-        ),
+          try {
+            await mkdirs(dirname(destPath));
+            await copy(sourcePath, destPath, {
+              preserveTimestamps: true,
+            });
+          } catch (error) {
+            console.error(
+              `Failed to copy package ${packageName} from ${sourcePath} to ${destPath}`,
+              error,
+            );
+            // Ignore errors for optional platform-specific packages
+            // if (!platformPackages.includes(packageName)) {
+            //   throw error;
+            // }
+            console.warn(
+              `Optional package ${packageName} not found, skipping...`,
+            );
+          }
+        }),
       );
     },
   },
@@ -76,13 +82,13 @@ const config: ForgeConfig = {
     new MakerZIP({}, ["darwin"]),
     new MakerRpm({}),
     new MakerDeb({}),
-    {
-      name: "@electron-forge/maker-dmg",
-      config: {
-        background: "./src/assets/dmg-background.png",
-        format: "ULFO",
-      },
-    },
+    // {
+    //   name: "@electron-forge/maker-dmg",
+    //   config: {
+    //     background: "./src/assets/dmg-background.png",
+    //     format: "ULFO",
+    //   },
+    // },
   ],
   plugins: [
     new VitePlugin({

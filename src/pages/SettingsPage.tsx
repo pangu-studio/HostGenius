@@ -30,6 +30,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 
 export default function SettingsPage() {
   const { t } = useTranslation();
+  const [appVersion, setAppVersion] = React.useState<string>("1.0.0");
   const {
     currentTheme,
     currentLanguage,
@@ -40,6 +41,21 @@ export default function SettingsPage() {
     getCurrentThemeLabel,
     getCurrentLanguageLabel,
   } = useSettings();
+
+  React.useEffect(() => {
+    const getAppVersion = async () => {
+      try {
+        const version = await window.electronAPI?.getAppVersion?.();
+        if (version) {
+          setAppVersion(version);
+        }
+      } catch (error) {
+        console.error("Failed to get app version:", error);
+      }
+    };
+
+    getAppVersion();
+  }, []);
 
   const getThemeIcon = (theme: ThemeMode) => {
     switch (theme) {
@@ -238,7 +254,9 @@ export default function SettingsPage() {
                   <span className="font-medium">
                     {t("settings.about.version")}:
                   </span>
-                  <span className="text-muted-foreground ml-2">1.0.0</span>
+                  <span className="text-muted-foreground ml-2">
+                    {appVersion}
+                  </span>
                 </div>
               </div>
 

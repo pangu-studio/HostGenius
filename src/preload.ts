@@ -45,6 +45,7 @@ export interface DataInfo {
 }
 
 const electronAPI = {
+  getAppVersion: () => ipcRenderer.invoke('get-app-version'),
   // validateAdminPassword: (password: string) => {
   //   return ipcRenderer.invoke("host:validate-admin-password", password);
   // },
