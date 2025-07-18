@@ -40,18 +40,16 @@ import { HostGroup } from "../../preload";
 import { useHosts } from "../../hooks/useHosts";
 
 interface HostGroupListProps {
-  groups: HostGroup[];
   onEditGroup: (group: HostGroup) => void;
   onCreateGroup: () => void;
 }
 
 export function HostGroupList({
-  groups,
   onEditGroup,
   onCreateGroup,
 }: HostGroupListProps) {
   const { t } = useTranslation();
-  const { toggleGroup, deleteGroup, applyHosts } = useHosts();
+  const { groups, toggleGroup, deleteGroup, applyHosts } = useHosts();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [groupToDelete, setGroupToDelete] = useState<HostGroup | null>(null);
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
@@ -296,10 +294,13 @@ export function HostGroupList({
       </div>
 
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <AlertDialogContent>
+        <AlertDialogContent className="max-w-md">
           <AlertDialogHeader>
-            <AlertDialogTitle>{t("hosts.confirmDeleteTitle")}</AlertDialogTitle>
-            <AlertDialogDescription>
+            <AlertDialogTitle className="flex items-center space-x-2">
+              <Trash2 className="text-destructive h-5 w-5" />
+              <span>{t("hosts.confirmDeleteTitle")}</span>
+            </AlertDialogTitle>
+            <AlertDialogDescription className="whitespace-pre-line">
               {t("hosts.confirmDeleteMessage", { name: groupToDelete?.name })}
             </AlertDialogDescription>
           </AlertDialogHeader>
@@ -307,7 +308,7 @@ export function HostGroupList({
             <AlertDialogCancel>{t("hosts.cancel")}</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDeleteGroup}
-              className="bg-destructive text-destructive-foreground"
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
               {t("hosts.delete")}
             </AlertDialogAction>

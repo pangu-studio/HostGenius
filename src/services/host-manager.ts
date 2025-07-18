@@ -580,8 +580,20 @@ export class HostManagerService {
   }
 
   // 删除分组
-  deleteGroup(id: string): boolean {
-    return databaseService.deleteGroup(id);
+  async deleteGroup(id: string): Promise<boolean> {
+    const success = databaseService.deleteGroup(id);
+
+    if (success) {
+      try {
+        // 删除分组后重新应用hosts配置
+        await this.applyHosts();
+      } catch (error) {
+        log.error("删除分组后应用hosts配置失败:", error);
+        // 即使应用失败，分组删除操作已经成功
+      }
+    }
+
+    return success;
   }
 
   // 切换分组启用状态

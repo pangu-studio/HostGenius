@@ -125,7 +125,7 @@ const initializeI18n = async () => {
             emptyContent: "(Empty)",
             confirmDeleteTitle: "Confirm Delete Group",
             confirmDeleteMessage:
-              'Are you sure you want to delete group "{{name}}"? This action cannot be undone.',
+              'Are you sure you want to delete group "{{name}}"?\n\n⚠️ Warning: This action will permanently delete:\n• All host configurations in this group\n• Complete version history\n• All related data\n\nThis action cannot be undone.',
             readSystemHostsError: "Failed to read system hosts",
             nameRequired: "Please enter group name",
             updateSuccess: 'Group "{{name}}" updated',
@@ -286,7 +286,7 @@ const initializeI18n = async () => {
             emptyContent: "(空)",
             confirmDeleteTitle: "确认删除分组",
             confirmDeleteMessage:
-              '你确定要删除分组 "{{name}}" 吗？此操作无法撤销。',
+              '你确定要删除分组 "{{name}}" 吗？\n\n⚠️ 警告：此操作将永久删除：\n• 该分组中的所有hosts配置\n• 完整的版本历史记录\n• 所有相关数据\n\n此操作无法撤销。',
             readSystemHostsError: "读取系统hosts失败",
             nameRequired: "请输入分组名称",
             updateSuccess: '分组 "{{name}}" 已更新',
@@ -448,9 +448,9 @@ const initializeI18n = async () => {
             viewContent: "View Content",
             lines: "lines",
             emptyContent: "(Empty)",
-            confirmDeleteTitle: "Confirm Delete Group",
+            confirmDeleteTitle: "Confirmar Exclusão de Grupo",
             confirmDeleteMessage:
-              'Are you sure you want to delete group "{{name}}"? This action cannot be undone.',
+              'Tem certeza de que deseja excluir o grupo "{{name}}"?\n\n⚠️ Aviso: Esta ação excluirá permanentemente:\n• Todas as configurações de host neste grupo\n• Histórico completo de versões\n• Todos os dados relacionados\n\nEsta ação não pode ser desfeita.',
             readSystemHostsError: "Failed to read system hosts",
             nameRequired: "Please enter group name",
             updateSuccess: 'Group "{{name}}" updated',
@@ -609,9 +609,9 @@ const initializeI18n = async () => {
             viewContent: "View Content",
             lines: "lines",
             emptyContent: "(Empty)",
-            confirmDeleteTitle: "Confirm Delete Group",
+            confirmDeleteTitle: "グループ削除の確認",
             confirmDeleteMessage:
-              'Are you sure you want to delete group "{{name}}"? This action cannot be undone.',
+              'グループ "{{name}}" を削除してもよろしいですか？\n\n⚠️ 警告：この操作により以下が永久に削除されます：\n• このグループ内のすべてのホスト設定\n• 完全なバージョン履歴\n• すべての関連データ\n\nこの操作は元に戻せません。',
             readSystemHostsError: "Failed to read system hosts",
             nameRequired: "Please enter group name",
             updateSuccess: 'Group "{{name}}" updated',
@@ -767,9 +767,9 @@ const initializeI18n = async () => {
             viewContent: "View Content",
             lines: "lines",
             emptyContent: "(Empty)",
-            confirmDeleteTitle: "Confirm Delete Group",
+            confirmDeleteTitle: "그룹 삭제 확인",
             confirmDeleteMessage:
-              'Are you sure you want to delete group "{{name}}"? This action cannot be undone.',
+              '그룹 "{{name}}"을(를) 삭제하시겠습니까？\n\n⚠️ 경고: 이 작업으로 다음이 영구적으로 삭제됩니다：\n• 이 그룹의 모든 호스트 구성\n• 완전한 버전 기록\n• 모든 관련 데이터\n\n이 작업은 되돌릴 수 없습니다.',
             readSystemHostsError: "Failed to read system hosts",
             nameRequired: "Please enter group name",
             updateSuccess: 'Group "{{name}}" updated',

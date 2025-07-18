@@ -11,17 +11,14 @@ import { copy, mkdirs } from "fs-extra";
 
 const config: ForgeConfig = {
   packagerConfig: {
-    osxSign: {
-      identity: process.env.APPLE_IDENTITY,
-      // ignore: ["Contents/Resources/better-sqlite3"],
-    },
+    osxSign: {},
     osxNotarize: {
       appleId: process.env.APPLE_ID!,
       appleIdPassword: process.env.APPLE_ID_PASSWORD!,
       teamId: process.env.APPLE_TEAM_ID!,
     },
     appBundleId: "studio.pangu.hostgenius",
-    asar: false,
+    asar: true,
     name: "Host Genius",
     extraResource: ["./node_modules/better-sqlite3"],
     icon: "./src/assets/icon/icon.icns",
@@ -36,20 +33,6 @@ const config: ForgeConfig = {
         "file-uri-to-path",
       ];
 
-      // Copy platform-specific packages if they exist
-      // const platformPackages = [
-      //   "@tailwindcss/oxide-darwin-arm64",
-      //   "@tailwindcss/oxide-darwin-x64",
-      //   "@tailwindcss/oxide-win32-x64-msvc",
-      //   "@tailwindcss/oxide-linux-x64-gnu",
-      //   "@tailwindcss/oxide-linux-arm64-gnu",
-      //   "lightningcss-darwin-arm64",
-      //   "lightningcss-darwin-x64",
-      //   "lightningcss-win32-x64-msvc",
-      //   "lightningcss-linux-x64-gnu",
-      //   "lightningcss-linux-arm64-gnu",
-      // ];
-
       // __dirname isn't accessible from here
       const dirnamePath: string = ".";
       const sourceNodeModulesPath = resolve(dirnamePath, "node_modules");
@@ -57,7 +40,6 @@ const config: ForgeConfig = {
 
       // Copy all required packages
       await Promise.all(
-        // [...requiredNativePackages, ...platformPackages].map(
         [...requiredNativePackages].map(async (packageName) => {
           const sourcePath = join(sourceNodeModulesPath, packageName);
           const destPath = join(destNodeModulesPath, packageName);
@@ -72,10 +54,7 @@ const config: ForgeConfig = {
               `Failed to copy package ${packageName} from ${sourcePath} to ${destPath}`,
               error,
             );
-            // Ignore errors for optional platform-specific packages
-            // if (!platformPackages.includes(packageName)) {
-            //   throw error;
-            // }
+
             console.warn(
               `Optional package ${packageName} not found, skipping...`,
             );

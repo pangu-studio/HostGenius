@@ -292,14 +292,38 @@ export class DatabaseService {
     const group = this.getGroupById(id);
     if (!group || group.isSystem) return false;
 
-    const stmt = this.db.prepare("DELETE FROM host_groups WHERE id = ?");
-    const result = stmt.run(id);
+    // 使用事务确保数据一致性
+    const transaction = this.db.transaction(() => {
+      // 先删除相关的历史记录
+      const deleteHistoryStmt = this.db.prepare(
+        "DELETE FROM host_history WHERE group_id = ?",
+      );
+      deleteHistoryStmt.run(id);
 
-    if (result.changes > 0) {
-      this.addHistory(id, "", group.version + 1, "delete");
+      // 再删除分组
+      const deleteGroupStmt = this.db.prepare(
+        "DELETE FROM host_groups WHERE id = ?",
+      );
+      const result = deleteGroupStmt.run(id);
+
+      if (result.changes > 0) {
+        // 记录删除操作到历史（在删除前记录）
+        const historyId = `history_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        const now = new Date().toISOString();
+
+        // 由于分组已删除，我们将删除记录保存到一个特殊的表或者不记录
+        // 这里选择不记录删除操作的历史，因为分组已经不存在了
+      }
+
+      return result.changes > 0;
+    });
+
+    try {
+      return transaction();
+    } catch (error) {
+      console.error("删除分组失败:", error);
+      return false;
     }
-
-    return result.changes > 0;
   }
 
   // 历史记录管理
