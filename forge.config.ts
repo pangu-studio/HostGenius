@@ -11,9 +11,9 @@ import { copy, mkdirs } from "fs-extra";
 
 const config: ForgeConfig = {
   packagerConfig: {
-    osxSign: {
-      ignore: ["Contents/Resources/better-sqlite3"],
-    },
+    // osxSign: {
+    //   ignore: ["Contents/Resources/better-sqlite3"],
+    // },
     asar: true,
     name: "Host Genius",
     extraResource: ["./node_modules/better-sqlite3"],
