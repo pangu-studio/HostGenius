@@ -157,6 +157,7 @@ const initializeI18n = async () => {
           settings: {
             title: "Settings",
             description: "Customize your application preferences",
+            autoSaved: "Auto-saved",
             theme: {
               title: "Theme",
               description: "Choose your preferred theme",
@@ -318,6 +319,7 @@ const initializeI18n = async () => {
           settings: {
             title: "系统设置",
             description: "自定义您的应用偏好设置",
+            autoSaved: "自动保存",
             theme: {
               title: "主题",
               description: "选择您喜欢的主题",
@@ -482,6 +484,7 @@ const initializeI18n = async () => {
           settings: {
             title: "Configurações",
             description: "Personalize suas preferências do aplicativo",
+            autoSaved: "Salvo automaticamente",
             theme: {
               title: "Tema",
               description: "Escolha seu tema preferido",
@@ -642,6 +645,7 @@ const initializeI18n = async () => {
           settings: {
             title: "設定",
             description: "アプリケーションの設定をカスタマイズ",
+            autoSaved: "自動保存",
             theme: {
               title: "テーマ",
               description: "お好みのテーマを選択",
@@ -800,6 +804,7 @@ const initializeI18n = async () => {
           settings: {
             title: "설정",
             description: "애플리케이션 기본 설정을 사용자 정의하세요",
+            autoSaved: "자동 저장",
             theme: {
               title: "테마",
               description: "선호하는 테마를 선택하세요",
