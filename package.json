@@ -96,7 +96,7 @@
     "@vitejs/plugin-react": "^4.6.0",
     "archiver": "^7.0.1",
     "babel-plugin-react-compiler": "^19.0.0-beta-e993439-20250328",
-    "better-sqlite3": "^11.9.1",
+    "better-sqlite3": "^12.2.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "electron-log": "^5.4.1",
