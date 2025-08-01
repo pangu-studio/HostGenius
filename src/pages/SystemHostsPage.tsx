@@ -48,6 +48,7 @@ export default function SystemHostsPage() {
 
   const [activeTab, setActiveTab] = useState("text");
   const [copied, setCopied] = useState(false);
+  const [copyingRowIndex, setCopyingRowIndex] = useState<number | null>(null);
 
   const handleRefresh = async () => {
     await loadSystemHosts();
@@ -62,6 +63,18 @@ export default function SystemHostsPage() {
       setTimeout(() => setCopied(false), 2000);
     } catch (err) {
       toast.error(t("hosts.systemView.copyError"));
+    }
+  };
+
+  const handleCopyRow = async (ip: string, domain: string, index: number) => {
+    try {
+      const textToCopy = `${ip}  ${domain}`;
+      await navigator.clipboard.writeText(textToCopy);
+      setCopyingRowIndex(index);
+      toast.success(t("hosts.systemView.rowCopySuccess"));
+      setTimeout(() => setCopyingRowIndex(null), 2000);
+    } catch (err) {
+      toast.error(t("hosts.systemView.rowCopyError"));
     }
   };
 
@@ -295,6 +308,9 @@ export default function SystemHostsPage() {
                             <TableHead>{t("hosts.ipAddress")}</TableHead>
                             <TableHead>{t("hosts.domain")}</TableHead>
                             <TableHead>{t("hosts.comment")}</TableHead>
+                            <TableHead className="w-[100px]">
+                              {t("hosts.systemView.actions")}
+                            </TableHead>
                           </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -320,6 +336,23 @@ export default function SystemHostsPage() {
                               </TableCell>
                               <TableCell className="text-muted-foreground text-sm">
                                 {entry.comment || "-"}
+                              </TableCell>
+                              <TableCell>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() =>
+                                    handleCopyRow(entry.ip, entry.domain, index)
+                                  }
+                                  className="h-8 w-8 p-0"
+                                  title={t("hosts.systemView.copyRow")}
+                                >
+                                  {copyingRowIndex === index ? (
+                                    <Check className="h-4 w-4 text-green-600" />
+                                  ) : (
+                                    <Copy className="h-4 w-4" />
+                                  )}
+                                </Button>
                               </TableCell>
                             </TableRow>
                           ))}
