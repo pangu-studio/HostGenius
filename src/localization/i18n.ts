@@ -100,6 +100,8 @@ const initializeI18n = async () => {
               copySuccess: "Content copied to clipboard",
               copyError: "Copy failed",
               loadError: "Failed to load system hosts file",
+              rowCopySuccess: "Copied to clipboard",
+              rowCopyError: "Copy failed",
             },
             // 新增翻译条目
             groupEnabled: 'Group "{{name}}" enabled',
@@ -234,6 +236,7 @@ const initializeI18n = async () => {
             requestPermission: "获取权限",
             // 系统Hosts查看相关
             systemView: {
+              actions: "操作",
               title: "系统Hosts查看",
               readOnlyMode: "只读模式",
               textView: "文本查看",
@@ -263,6 +266,8 @@ const initializeI18n = async () => {
               copySuccess: "内容已复制到剪贴板",
               copyError: "复制失败",
               loadError: "读取系统hosts文件失败",
+              rowCopySuccess: "已复制到剪贴板",
+              rowCopyError: "复制失败",
             },
             // 新增翻译条目
             groupEnabled: '分组 "{{name}}" 已启用',
@@ -427,6 +432,8 @@ const initializeI18n = async () => {
               copySuccess: "Conteúdo copiado para a área de transferência",
               copyError: "Falha ao copiar",
               loadError: "Falha ao carregar o arquivo hosts do sistema",
+              rowCopySuccess: "Copiado para a área de transferência",
+              rowCopyError: "Falha ao copiar",
             },
             // 新增翻译条目
             groupEnabled: 'Group "{{name}}" enabled',
@@ -589,6 +596,8 @@ const initializeI18n = async () => {
               copySuccess: "内容をクリップボードにコピーしました",
               copyError: "コピーに失敗しました",
               loadError: "システムhostsファイルの読み込みに失敗しました",
+              rowCopySuccess: "クリップボードにコピーしました",
+              rowCopyError: "コピーに失敗しました",
             },
             // 新增翻译条目
             groupEnabled: 'Group "{{name}}" enabled',
@@ -748,6 +757,8 @@ const initializeI18n = async () => {
               copySuccess: "내용이 클립보드에 복사되었습니다",
               copyError: "복사 실패",
               loadError: "시스템 hosts 파일 로드 실패",
+              rowCopySuccess: "클립보드에 복사되었습니다",
+              rowCopyError: "복사 실패",
             },
             // 新增翻译条目
             groupEnabled: 'Group "{{name}}" enabled',
