@@ -5,14 +5,22 @@ import { FuseV1Options, FuseVersion } from "@electron/fuses";
 import { resolve, join, dirname } from "path";
 import { copy, mkdirs } from "fs-extra";
 
+// 检查是否为生产构建
+const isProduction = process.env.NODE_ENV === "production";
+const isRelease = process.env.BUILD_TYPE === "release";
+const shouldSign = isProduction && isRelease;
+
 const config: ForgeConfig = {
   packagerConfig: {
-    osxSign: {},
-    osxNotarize: {
-      appleId: process.env.APPLE_ID!,
-      appleIdPassword: process.env.APPLE_ID_PASSWORD!,
-      teamId: process.env.APPLE_TEAM_ID!,
-    },
+    // 只在生产发布时启用签名
+    ...(shouldSign && {
+      osxSign: {},
+      osxNotarize: {
+        appleId: process.env.APPLE_ID!,
+        appleIdPassword: process.env.APPLE_ID_PASSWORD!,
+        teamId: process.env.APPLE_TEAM_ID!,
+      },
+    }),
     appBundleId: "studio.pangu.hostgenius",
     asar: true,
     name: "Host Genius",
@@ -63,46 +71,53 @@ const config: ForgeConfig = {
     {
       name: "@electron-forge/maker-zip",
       config: (arch: string) => ({
-        // Note that we must provide this S3 URL here
-        // in order to support smooth version transitions
-        // especially when using a CDN to front your updates
-        macUpdateManifestBaseUrl: `https://pangu-updater.oss-cn-hongkong.aliyuncs.com/host-genius/darwin/${arch}`,
+        // 只在启用签名时提供更新清单URL
+        ...(shouldSign && {
+          macUpdateManifestBaseUrl: `https://pangu-updater.oss-cn-hongkong.aliyuncs.com/host-genius/darwin/${arch}`,
+        }),
       }),
       platforms: ["darwin"],
     },
     {
       name: "@electron-forge/maker-squirrel",
       config: (arch: string) => ({
-        // Note that we must provide this S3 URL here
-        // in order to generate delta updates
-        remoteReleases: `https://pangu-updater.oss-cn-hongkong.aliyuncs.com/host-genius/win32/${arch}`,
+        // 只在启用签名时提供远程发布URL
+        ...(shouldSign && {
+          remoteReleases: `https://pangu-updater.oss-cn-hongkong.aliyuncs.com/host-genius/win32/${arch}`,
+        }),
       }),
       platforms: ["win32"],
     },
-    // new MakerRpm({}),
-    // new MakerDeb({}),
-    // {
-    //   name: "@electron-forge/maker-dmg",
-    //   config: {
-    //     background: "./src/assets/dmg-background.png",
-    //     format: "ULFO",
-    //   },
-    // },
+    // 在开发/测试环境中启用 DMG maker
+    ...(!shouldSign
+      ? [
+          {
+            name: "@electron-forge/maker-dmg",
+            config: {
+              background: "./src/assets/dmg-background.png",
+              format: "ULFO",
+            },
+          },
+        ]
+      : []),
   ],
-  publishers: [
-    {
-      name: "@electron-forge/publisher-s3",
-      config: {
-        endpoint: "https://oss-cn-hongkong.aliyuncs.com",
-        bucket: "pangu-updater",
-        public: true,
-        accessKeyId: process.env.S3_ACCESS_KEY_ID,
-        secretAccessKey: process.env.S3_ACCESS_KEY_SECRET,
-        region: "cn-hongkong",
-        folder: "host-genius",
+  // 只在生产发布时启用发布器
+  ...(shouldSign && {
+    publishers: [
+      {
+        name: "@electron-forge/publisher-s3",
+        config: {
+          endpoint: "https://oss-cn-hongkong.aliyuncs.com",
+          bucket: "pangu-updater",
+          public: true,
+          accessKeyId: process.env.S3_ACCESS_KEY_ID,
+          secretAccessKey: process.env.S3_ACCESS_KEY_SECRET,
+          region: "cn-hongkong",
+          folder: "host-genius",
+        },
       },
-    },
-  ],
+    ],
+  }),
   plugins: [
     new VitePlugin({
       build: [

@@ -22,7 +22,7 @@ jobs:
     timeout-minutes: 15
     strategy:
       matrix:
-        os: [windows-latest]
+        os: [windows-latest, macos-latest, ubuntu-latest]
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
@@ -33,10 +33,13 @@ jobs:
         run: npm install
       - name: Install Playwright Browsers
         run: npx playwright install --with-deps
-      - name: Build Application (Package)
-        run: npm run package
-      - name: Create Executable (Make)
-        run: npm run make
+      - name: Build Application (Package) for testing
+        run: npm run package:test
+      - name: Create Executable (Make) for testing
+        run: npm run make:dev
+        env:
+          NODE_ENV: development
+          BUILD_TYPE: test
       - name: List build output (Debug)
         shell: bash
         run: |

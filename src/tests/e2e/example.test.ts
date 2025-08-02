@@ -5,8 +5,7 @@ import {
   ElectronApplication,
   Page,
 } from "@playwright/test";
-import path from "path";
-import fs from "fs";
+import { findLatestBuild, parseElectronApp } from "electron-playwright-helpers";
 
 /*
  * Using Playwright with Electron:
@@ -16,53 +15,13 @@ import fs from "fs";
 let electronApp: ElectronApplication;
 
 test.beforeAll(async () => {
+  const latestBuild = findLatestBuild();
+  const appInfo = parseElectronApp(latestBuild);
   process.env.CI = "e2e";
 
-  // 使用本地构建的应用路径
-  let executablePath: string;
-
-  if (process.platform === "win32") {
-    // Windows 平台
-    executablePath = path.join(
-      process.cwd(),
-      "out",
-      "Host Genius-win32-x64",
-      "Host Genius.exe",
-    );
-  } else if (process.platform === "darwin") {
-    // macOS 平台
-    const arch = process.arch === "arm64" ? "arm64" : "x64";
-    executablePath = path.join(
-      process.cwd(),
-      "out",
-      `Host Genius-darwin-${arch}`,
-      "Host Genius.app",
-      "Contents",
-      "MacOS",
-      "Host Genius",
-    );
-  } else {
-    // Linux 平台
-    executablePath = path.join(
-      process.cwd(),
-      "out",
-      "Host Genius-linux-x64",
-      "Host Genius",
-    );
-  }
-
-  // 检查构建文件是否存在
-  if (!fs.existsSync(executablePath)) {
-    throw new Error(
-      `构建的应用程序不存在: ${executablePath}。请先运行 'npm run make' 构建应用。`,
-    );
-  }
-
   electronApp = await electron.launch({
-    executablePath,
-    args: process.env.CI ? [] : ["--enable-logging"],
+    args: [appInfo.main],
   });
-
   electronApp.on("window", async (page) => {
     const filename = page.url()?.split("/").pop();
     console.log(`Window opened: ${filename}`);
