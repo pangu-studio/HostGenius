@@ -67,8 +67,8 @@ const config: ForgeConfig = {
         // in order to support smooth version transitions
         // especially when using a CDN to front your updates
         macUpdateManifestBaseUrl: `https://pangu-updater.oss-cn-hongkong.aliyuncs.com/host-genius/darwin/${arch}`,
-        platforms: ["darwin"],
       }),
+      platforms: ["darwin"],
     },
     {
       name: "@electron-forge/maker-squirrel",
@@ -76,8 +76,8 @@ const config: ForgeConfig = {
         // Note that we must provide this S3 URL here
         // in order to generate delta updates
         remoteReleases: `https://pangu-updater.oss-cn-hongkong.aliyuncs.com/host-genius/win32/${arch}`,
-        platforms: ["win32"],
       }),
+      platforms: ["win32"],
     },
     // new MakerRpm({}),
     // new MakerDeb({}),

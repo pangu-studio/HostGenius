@@ -17,26 +17,37 @@ jobs:
         run: npm install
       - name: Run unit tests
         run: npm run test:unit
+
   test-e2e:
-    timeout-minutes: 10
-    runs-on: windows-latest
+    timeout-minutes: 15
+    strategy:
+      matrix:
+        os: [windows-latest, macos-latest, ubuntu-latest]
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 22
       - name: Install dependencies
-        run: |
-          npm install
+        run: npm install
       - name: Install Playwright Browsers
         run: npx playwright install --with-deps
-      - name: Create Executable
+      - name: Build Application (Package)
+        run: npm run package
+      - name: Create Executable (Make)
         run: npm run make
+      - name: List build output (Debug)
+        shell: bash
+        run: |
+          echo "Build output structure:"
+          ls -la out/ || echo "No out directory"
+          find out/ -name "Host Genius*" -type f 2>/dev/null || echo "No Host Genius executable found"
       - name: Run Playwright tests
         run: npm run test:e2e
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: playwright-report
+          name: playwright-report-${{ matrix.os }}
           path: playwright-report/
           retention-days: 7

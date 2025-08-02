@@ -9,10 +9,17 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
   workers: process.env.CI ? 1 : undefined,
-  reporter: "html",
+  reporter: process.env.CI ? [["html"], ["github"]] : [["html"], ["list"]],
   use: {
     trace: "on-first-retry",
     testIdAttribute: "data-testid",
+    screenshot: "only-on-failure",
+    video: "retain-on-failure",
+  },
+  // 设置超时时间
+  timeout: 30000,
+  expect: {
+    timeout: 10000,
   },
 
   projects: [
