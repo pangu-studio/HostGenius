@@ -81,13 +81,13 @@ const config: ForgeConfig = {
     },
     // new MakerRpm({}),
     // new MakerDeb({}),
-    {
-      name: "@electron-forge/maker-dmg",
-      config: {
-        background: "./src/assets/dmg-background.png",
-        format: "ULFO",
-      },
-    },
+    // {
+    //   name: "@electron-forge/maker-dmg",
+    //   config: {
+    //     background: "./src/assets/dmg-background.png",
+    //     format: "ULFO",
+    //   },
+    // },
   ],
   publishers: [
     {
