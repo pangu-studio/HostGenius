@@ -15,7 +15,7 @@
     "make:dev": "cross-env NODE_ENV=development electron-forge make",
     "make:release": "cross-env NODE_ENV=production BUILD_TYPE=release electron-forge make",
     "postinstall": "node scripts/install-native-deps.js",
-    "publish": "NODE_ENV=production BUILD_TYPE=release electron-forge publish",
+    "publish": "cross-env NODE_ENV=production BUILD_TYPE=release electron-forge publish",
     "lint": "eslint .",
     "format": "prettier --check .",
     "format:write": "prettier --write .",
