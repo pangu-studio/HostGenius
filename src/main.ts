@@ -15,7 +15,7 @@ ipcMain.handle("get-app-version", () => {
 updateElectronApp({
   updateSource: {
     type: UpdateSourceType.StaticStorage,
-    baseUrl: `https://pangu-updater.oss-cn-hongkong.aliyuncs.com/host-genius//${process.platform}/${process.arch}`
+    baseUrl: `https://pangu-updater.oss-cn-hongkong.aliyuncs.com/host-genius/${process.platform}/${process.arch}`
   }
 });
 
