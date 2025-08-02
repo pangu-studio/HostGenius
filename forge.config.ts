@@ -1,5 +1,6 @@
 import type { ForgeConfig } from "@electron-forge/shared-types";
 import { VitePlugin } from "@electron-forge/plugin-vite";
+import { MakerDeb } from "@electron-forge/maker-deb";
 import { FusesPlugin } from "@electron-forge/plugin-fuses";
 import { FuseV1Options, FuseVersion } from "@electron/fuses";
 import { resolve, join, dirname } from "path";
@@ -68,6 +69,7 @@ const config: ForgeConfig = {
     },
   },
   makers: [
+    new MakerDeb({}),
     {
       name: "@electron-forge/maker-zip",
       config: (arch: string) => ({
