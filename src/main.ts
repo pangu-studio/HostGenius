@@ -44,6 +44,11 @@ function setupGlobalListeners() {
 
 function createWindow() {
   const preload = path.join(__dirname, "preload.js");
+
+  // 根据平台设置不同的标题栏样式
+  const titleBarStyle =
+    process.platform === "darwin" ? "hiddenInset" : "hidden";
+
   mainWindow = new BrowserWindow({
     width: 1200,
     height: 800,
@@ -55,7 +60,7 @@ function createWindow() {
       nodeIntegrationInSubFrames: false,
       preload: preload,
     },
-    titleBarStyle: "hidden",
+    titleBarStyle: titleBarStyle,
     show: false,
   });
 

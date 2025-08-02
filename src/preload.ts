@@ -45,7 +45,7 @@ export interface DataInfo {
 }
 
 const electronAPI = {
-  getAppVersion: () => ipcRenderer.invoke('get-app-version'),
+  getAppVersion: () => ipcRenderer.invoke("get-app-version"),
   // validateAdminPassword: (password: string) => {
   //   return ipcRenderer.invoke("host:validate-admin-password", password);
   // },
@@ -157,6 +157,14 @@ const electronAPI = {
 };
 
 contextBridge.exposeInMainWorld("electronAPI", electronAPI);
+
+// 暴露平台信息
+contextBridge.exposeInMainWorld("platform", {
+  isMac: process.platform === "darwin",
+  isWindows: process.platform === "win32",
+  isLinux: process.platform === "linux",
+  platform: process.platform,
+});
 
 declare global {
   interface Window {

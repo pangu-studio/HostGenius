@@ -4,22 +4,33 @@ import {
   minimizeWindow,
 } from "@/helpers/window_helpers";
 import React, { type ReactNode } from "react";
+import { cn } from "@/utils/tailwind";
 
 interface DragWindowRegionProps {
   title?: ReactNode;
 }
 
 export default function DragWindowRegion({ title }: DragWindowRegionProps) {
+  // 检查是否为macOS系统
+  const isMac = (window as any).platform?.isMac ?? false;
+
   return (
     <div className="flex w-screen items-stretch justify-between">
-      <div className="draglayer w-full">
+      {/* 拖拽区域 - 在所有平台都保留 */}
+      <div
+        className={cn(
+          "draglayer border-border/90 w-full border-b",
+          isMac && "pt-9", // macOS 添加顶部间距避免被系统按钮遮挡
+        )}
+      >
         {title && (
           <div className="flex flex-1 p-2 text-xs whitespace-nowrap text-gray-400 select-none">
             {title}
           </div>
         )}
       </div>
-      <WindowButtons />
+      {/* 只在非macOS系统上显示自定义窗口控制按钮 */}
+      {!isMac && <WindowButtons />}
     </div>
   );
 }
