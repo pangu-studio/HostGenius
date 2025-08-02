@@ -52,6 +52,8 @@ jobs:
           APPLE_ID: ${{ secrets.APPLE_ID }}
           APPLE_ID_PASSWORD: ${{ secrets.APPLE_ID_PASSWORD }}
           APPLE_TEAM_ID: ${{ secrets.TEAM_ID }}
+          S3_ACCESS_KEY_ID: ${{ secrets.S3_ACCESS_KEY_ID }}
+          S3_ACCESS_KEY_SECRET: ${{ secrets.S3_ACCESS_KEY_SECRET }}
       - uses: actions/upload-artifact@v4
         with:
           name: macos-arm64-${{ env.PACKAGE_VERSION }}
@@ -104,6 +106,8 @@ jobs:
           APPLE_ID: ${{ secrets.APPLE_ID }}
           APPLE_ID_PASSWORD: ${{ secrets.APPLE_ID_PASSWORD }}
           APPLE_TEAM_ID: ${{ secrets.TEAM_ID }}
+          S3_ACCESS_KEY_ID: ${{ secrets.S3_ACCESS_KEY_ID }}
+          S3_ACCESS_KEY_SECRET: ${{ secrets.S3_ACCESS_KEY_SECRET }}
       - uses: actions/upload-artifact@v4
         with:
           name: macos-x64-${{ env.PACKAGE_VERSION }}
@@ -125,6 +129,9 @@ jobs:
           npm install
       - name: Build
         run: npm run publish
+        env:
+          S3_ACCESS_KEY_ID: ${{ secrets.S3_ACCESS_KEY_ID }}
+          S3_ACCESS_KEY_SECRET: ${{ secrets.S3_ACCESS_KEY_SECRET }}
       - uses: actions/upload-artifact@v4
         with:
           name: windows-x64-${{ env.PACKAGE_VERSION }}

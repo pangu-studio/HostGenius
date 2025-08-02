@@ -8,7 +8,6 @@ import {
 import { updateElectronApp, UpdateSourceType } from "update-electron-app";
 
 const inDevelopment = process.env.NODE_ENV === "development";
-// const updateServer = process.env.UPDATE_SERVER || "https://update.pangu.studio";
 ipcMain.handle("get-app-version", () => {
   return app.getVersion();
 });
