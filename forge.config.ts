@@ -1,8 +1,4 @@
 import type { ForgeConfig } from "@electron-forge/shared-types";
-import { MakerSquirrel } from "@electron-forge/maker-squirrel";
-import { MakerZIP } from "@electron-forge/maker-zip";
-import { MakerDeb } from "@electron-forge/maker-deb";
-import { MakerRpm } from "@electron-forge/maker-rpm";
 import { VitePlugin } from "@electron-forge/plugin-vite";
 import { FusesPlugin } from "@electron-forge/plugin-fuses";
 import { FuseV1Options, FuseVersion } from "@electron/fuses";
@@ -64,15 +60,44 @@ const config: ForgeConfig = {
     },
   },
   makers: [
-    new MakerSquirrel({}),
-    new MakerZIP({}, ["darwin"]),
-    new MakerRpm({}),
-    new MakerDeb({}),
+    {
+      name: "@electron-forge/maker-zip",
+      config: (arch: string) => ({
+        // Note that we must provide this S3 URL here
+        // in order to support smooth version transitions
+        // especially when using a CDN to front your updates
+        macUpdateManifestBaseUrl: `https://pangu-updater.oss-cn-hongkong.aliyuncs.com/host-genius/darwin/${arch}`,
+      }),
+    },
+    {
+      name: "@electron-forge/maker-squirrel",
+      config: (arch: string) => ({
+        // Note that we must provide this S3 URL here
+        // in order to generate delta updates
+        remoteReleases: `https://pangu-updater.oss-cn-hongkong.aliyuncs.com/host-genius/win32/${arch}`,
+      }),
+    },
+    // new MakerRpm({}),
+    // new MakerDeb({}),
     {
       name: "@electron-forge/maker-dmg",
       config: {
         background: "./src/assets/dmg-background.png",
         format: "ULFO",
+      },
+    },
+  ],
+  publishers: [
+    {
+      name: "@electron-forge/publisher-s3",
+      config: {
+        endpoint: "https://oss-cn-hongkong.aliyuncs.com",
+        bucket: "pangu-updater",
+        public: true,
+        accessKeyId: process.env.S3_ACCESS_KEY_ID,
+        secretAccessKey: process.env.S3_ACCESS_KEY_SECRET,
+        region: "cn-hongkong",
+        folder: "host-genius",
       },
     },
   ],

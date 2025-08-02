@@ -16,6 +16,7 @@ import { cn } from "@/utils/tailwind";
 export default function NavigationMenu() {
   const { t } = useTranslation();
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [appVersion, setAppVersion] = useState<string>("1.0.0");
 
   const navigationItems = [
     {
@@ -37,6 +38,21 @@ export default function NavigationMenu() {
       key: "settings",
     },
   ];
+
+  React.useEffect(() => {
+    const getAppVersion = async () => {
+      try {
+        const version = await window.electronAPI?.getAppVersion?.();
+        if (version) {
+          setAppVersion(version);
+        }
+      } catch (error) {
+        console.error("Failed to get app version:", error);
+      }
+    };
+
+    getAppVersion();
+  }, []);
 
   return (
     <div
@@ -100,7 +116,7 @@ export default function NavigationMenu() {
         <>
           <Separator />
           <div className="text-muted-foreground font-tomorrow p-4 text-xs uppercase">
-            <p>版本 1.0.0</p>
+            <p>版本 {appVersion}</p>
             <p>© 2025 Pangu Studio</p>
           </div>
         </>
