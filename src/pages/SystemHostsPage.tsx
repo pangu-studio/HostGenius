@@ -46,7 +46,7 @@ export default function SystemHostsPage() {
     clearError,
   } = useSystemHosts();
 
-  const [activeTab, setActiveTab] = useState("text");
+  const [activeTab, setActiveTab] = useState("table");
   const [copied, setCopied] = useState(false);
   const [copyingRowIndex, setCopyingRowIndex] = useState<number | null>(null);
 
@@ -226,52 +226,20 @@ export default function SystemHostsPage() {
             <Tabs value={activeTab} onValueChange={setActiveTab}>
               <TabsList className="grid w-full grid-cols-2">
                 <TabsTrigger
-                  value="text"
-                  className="flex items-center space-x-2"
-                >
-                  <FileText className="h-4 w-4" />
-                  <span>{t("hosts.systemView.textView")}</span>
-                </TabsTrigger>
-                <TabsTrigger
                   value="table"
                   className="flex items-center space-x-2"
                 >
                   <List className="h-4 w-4" />
                   <span>{t("hosts.systemView.tableView")}</span>
                 </TabsTrigger>
+                <TabsTrigger
+                  value="text"
+                  className="flex items-center space-x-2"
+                >
+                  <FileText className="h-4 w-4" />
+                  <span>{t("hosts.systemView.textView")}</span>
+                </TabsTrigger>
               </TabsList>
-
-              <TabsContent value="text" className="space-y-4">
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <Label htmlFor="content">
-                      {t("hosts.systemView.fileContent")}
-                    </Label>
-                    <div className="text-muted-foreground flex items-center space-x-4 text-sm">
-                      {searchTerm && (
-                        <>
-                          <span>
-                            {t("hosts.systemView.searchResults", {
-                              term: searchTerm,
-                            })}
-                          </span>
-                          <Separator orientation="vertical" className="h-4" />
-                        </>
-                      )}
-                      <span>
-                        {t("hosts.systemView.showingLines", {
-                          count: filteredRawContent.split("\n").length,
-                        })}
-                      </span>
-                    </div>
-                  </div>
-                  <div className="relative">
-                    <pre className="bg-muted h-[500px] overflow-auto rounded-md border p-4 font-mono text-sm">
-                      {filteredRawContent || t("hosts.systemView.emptyFile")}
-                    </pre>
-                  </div>
-                </div>
-              </TabsContent>
 
               <TabsContent value="table" className="space-y-4">
                 <div className="space-y-2">
@@ -302,9 +270,6 @@ export default function SystemHostsPage() {
                       <Table>
                         <TableHeader className="bg-background sticky top-0 z-10">
                           <TableRow>
-                            <TableHead className="w-[80px]">
-                              {t("hosts.systemView.status")}
-                            </TableHead>
                             <TableHead>{t("hosts.ipAddress")}</TableHead>
                             <TableHead>{t("hosts.domain")}</TableHead>
                             <TableHead>{t("hosts.comment")}</TableHead>
@@ -316,18 +281,6 @@ export default function SystemHostsPage() {
                         <TableBody>
                           {filteredEntries.map((entry, index) => (
                             <TableRow key={index}>
-                              <TableCell>
-                                <Badge
-                                  variant={
-                                    entry.enabled ? "default" : "secondary"
-                                  }
-                                  className="text-xs"
-                                >
-                                  {entry.enabled
-                                    ? t("hosts.enabled")
-                                    : t("hosts.disabled")}
-                                </Badge>
-                              </TableCell>
                               <TableCell className="font-mono text-sm">
                                 {entry.ip}
                               </TableCell>
@@ -381,6 +334,38 @@ export default function SystemHostsPage() {
                         )}
                       </div>
                     )}
+                  </div>
+                </div>
+              </TabsContent>
+
+              <TabsContent value="text" className="space-y-4">
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="content">
+                      {t("hosts.systemView.fileContent")}
+                    </Label>
+                    <div className="text-muted-foreground flex items-center space-x-4 text-sm">
+                      {searchTerm && (
+                        <>
+                          <span>
+                            {t("hosts.systemView.searchResults", {
+                              term: searchTerm,
+                            })}
+                          </span>
+                          <Separator orientation="vertical" className="h-4" />
+                        </>
+                      )}
+                      <span>
+                        {t("hosts.systemView.showingLines", {
+                          count: filteredRawContent.split("\n").length,
+                        })}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="relative">
+                    <pre className="bg-muted h-[500px] overflow-auto rounded-md border p-4 font-mono text-sm">
+                      {filteredRawContent || t("hosts.systemView.emptyFile")}
+                    </pre>
                   </div>
                 </div>
               </TabsContent>
