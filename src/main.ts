@@ -37,16 +37,16 @@ ipcMain.handle("app:get-version", () => {
 });
 
 // 只在生产发布时启用自动更新
-if (inDevelopment || !isRelease) {
-  console.log("开发模式：跳过自动更新检查");
-} else {
-  updateElectronApp({
-    updateSource: {
-      type: UpdateSourceType.StaticStorage,
-      baseUrl: `https://pangu-updater.oss-cn-hongkong.aliyuncs.com/host-genius/${process.platform}/${process.arch}`,
-    },
-  });
-}
+// if (inDevelopment || !isRelease) {
+//   console.log("开发模式：跳过自动更新检查");
+// } else {
+updateElectronApp({
+  updateSource: {
+    type: UpdateSourceType.StaticStorage,
+    baseUrl: `https://pangu-updater.oss-cn-hongkong.aliyuncs.com/host-genius/${process.platform}/${process.arch}`,
+  },
+});
+// }
 
 // 设置应用名称，覆盖默认 "Electron"
 app.setName("Host Genius");
