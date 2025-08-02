@@ -31,6 +31,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 export default function SettingsPage() {
   const { t } = useTranslation();
   const [appVersion, setAppVersion] = React.useState<string>("1.0.0");
+  const [isDevelopment, setIsDevelopment] = React.useState<boolean>(false);
   const {
     currentTheme,
     currentLanguage,
@@ -45,9 +46,13 @@ export default function SettingsPage() {
   React.useEffect(() => {
     const getAppVersion = async () => {
       try {
-        const version = await window.electronAPI?.getAppVersion?.();
+        const version = await window.electronAPI?.getVersion?.();
+        const devMode = await window.electronAPI?.isDevelopment?.();
         if (version) {
           setAppVersion(version);
+        }
+        if (devMode !== undefined) {
+          setIsDevelopment(devMode);
         }
       } catch (error) {
         console.error("Failed to get app version:", error);
@@ -256,6 +261,11 @@ export default function SettingsPage() {
                   </span>
                   <span className="text-muted-foreground ml-2">
                     {appVersion}
+                    {isDevelopment && (
+                      <span className="ml-2 rounded bg-orange-100 px-2 py-1 text-xs text-orange-800 dark:bg-orange-900 dark:text-orange-200">
+                        开发版
+                      </span>
+                    )}
                   </span>
                 </div>
               </div>

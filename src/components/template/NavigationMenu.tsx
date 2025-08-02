@@ -17,6 +17,7 @@ export default function NavigationMenu() {
   const { t } = useTranslation();
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [appVersion, setAppVersion] = useState<string>("1.0.0");
+  const [isDevelopment, setIsDevelopment] = useState<boolean>(false);
 
   const navigationItems = [
     {
@@ -42,9 +43,13 @@ export default function NavigationMenu() {
   React.useEffect(() => {
     const getAppVersion = async () => {
       try {
-        const version = await window.electronAPI?.getAppVersion?.();
+        const version = await window.electronAPI?.getVersion?.();
+        const devMode = await window.electronAPI?.isDevelopment?.();
         if (version) {
           setAppVersion(version);
+        }
+        if (devMode !== undefined) {
+          setIsDevelopment(devMode);
         }
       } catch (error) {
         console.error("Failed to get app version:", error);
@@ -116,7 +121,14 @@ export default function NavigationMenu() {
         <>
           <Separator />
           <div className="text-muted-foreground font-tomorrow p-4 text-xs uppercase">
-            <p>版本 {appVersion}</p>
+            <p>
+              版本 {appVersion}
+              {isDevelopment && (
+                <span className="ml-1 rounded bg-orange-100 px-1 py-0.5 text-xs text-orange-800 dark:bg-orange-900 dark:text-orange-200">
+                  TEST
+                </span>
+              )}
+            </p>
             <p>© 2025 Pangu Studio</p>
           </div>
         </>

@@ -14,6 +14,28 @@ ipcMain.handle("get-app-version", () => {
   return app.getVersion();
 });
 
+// 添加开发环境检查
+ipcMain.handle("app:is-development", () => {
+  return inDevelopment;
+});
+
+// 添加平台信息
+ipcMain.handle("app:get-platform", () => {
+  return process.platform;
+});
+
+// 添加完整版本信息
+ipcMain.handle("app:get-version", () => {
+  const baseVersion = app.getVersion();
+  if (inDevelopment) {
+    return `${baseVersion}-dev`;
+  }
+  if (!isRelease) {
+    return `${baseVersion}-beta`;
+  }
+  return baseVersion;
+});
+
 // 只在生产发布时启用自动更新
 if (inDevelopment || !isRelease) {
   console.log("开发模式：跳过自动更新检查");
