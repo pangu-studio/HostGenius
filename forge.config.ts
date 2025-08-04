@@ -10,7 +10,9 @@ import { copy, mkdirs } from "fs-extra";
 const isProduction = process.env.NODE_ENV === "production";
 const isRelease = process.env.BUILD_TYPE === "release";
 const shouldSign = isProduction && isRelease;
-
+console.log(
+  `Production: ${isProduction}, Release: ${isRelease}, Should Sign: ${shouldSign}`,
+);
 const config: ForgeConfig = {
   packagerConfig: {
     // 只在生产发布时启用签名
