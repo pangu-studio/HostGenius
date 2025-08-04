@@ -251,9 +251,6 @@ export function HostEditor({ group, onSave, onCancel }: HostEditorProps) {
               <Table>
                 <TableHeader className="bg-background sticky top-0 z-10">
                   <TableRow>
-                    <TableHead className="w-[100px]">
-                      {t("hosts.systemView.status")}
-                    </TableHead>
                     <TableHead>{t("hosts.ipAddress")}</TableHead>
                     <TableHead>{t("hosts.domain")}</TableHead>
                     <TableHead>{t("hosts.comment")}</TableHead>
@@ -265,15 +262,6 @@ export function HostEditor({ group, onSave, onCancel }: HostEditorProps) {
                 <TableBody>
                   {entries.map((entry, index) => (
                     <TableRow key={index}>
-                      <TableCell>
-                        <Switch
-                          checked={entry.enabled}
-                          onCheckedChange={(enabled) =>
-                            updateEntry(index, { enabled })
-                          }
-                          size="sm"
-                        />
-                      </TableCell>
                       <TableCell>
                         <Input
                           value={entry.ip}
@@ -514,9 +502,6 @@ export function HostEditor({ group, onSave, onCancel }: HostEditorProps) {
                     <Table>
                       <TableHeader className="bg-background sticky top-0 z-10">
                         <TableRow>
-                          <TableHead className="w-[100px]">
-                            {t("hosts.systemView.status")}
-                          </TableHead>
                           <TableHead>{t("hosts.ipAddress")}</TableHead>
                           <TableHead>{t("hosts.domain")}</TableHead>
                           <TableHead>{t("hosts.comment")}</TableHead>
@@ -528,15 +513,6 @@ export function HostEditor({ group, onSave, onCancel }: HostEditorProps) {
                       <TableBody>
                         {entries.map((entry, index) => (
                           <TableRow key={index}>
-                            <TableCell>
-                              <Switch
-                                checked={entry.enabled}
-                                onCheckedChange={(enabled) =>
-                                  updateEntry(index, { enabled })
-                                }
-                                size="sm"
-                              />
-                            </TableCell>
                             <TableCell>
                               <Input
                                 value={entry.ip}

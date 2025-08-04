@@ -1,3 +1,4 @@
+import { test } from "vitest";
 import { app, BrowserWindow, ipcMain } from "electron";
 import registerListeners from "./helpers/ipc/listeners-register";
 import path from "path";
@@ -8,7 +9,7 @@ import {
 import { updateElectronApp, UpdateSourceType } from "update-electron-app";
 
 const inDevelopment = process.env.NODE_ENV === "development";
-const isRelease = process.env.BUILD_TYPE === "release";
+const isTest = process.env.BUILD_TYPE === "test";
 
 ipcMain.handle("get-app-version", () => {
   return app.getVersion();
@@ -30,8 +31,8 @@ ipcMain.handle("app:get-version", () => {
   if (inDevelopment) {
     return `${baseVersion}-dev`;
   }
-  if (!isRelease) {
-    return `${baseVersion}-beta`;
+  if (isTest) {
+    return `${baseVersion}-test`;
   }
   return baseVersion;
 });
