@@ -7,11 +7,11 @@
   "private": true,
   "scripts": {
     "start": "electron-forge start",
-    "package": "electron-forge package",
+    "package": "cross-env NODE_ENV=production BUILD_TYPE=release electron-forge package",
     "package:dev": "cross-env NODE_ENV=development electron-forge package",
     "package:test": "cross-env NODE_ENV=development BUILD_TYPE=test electron-forge package",
     "sign": "electron-osx-sign './out/Host Genius-darwin-x64/Host Genius.app'",
-    "make": "cross-env NODE_ENV=development BUILD_TYPE=test electron-forge make",
+    "make": "cross-env NODE_ENV=production BUILD_TYPE=release electron-forge make",
     "make:dev": "cross-env NODE_ENV=development electron-forge make",
     "make:release": "cross-env NODE_ENV=production BUILD_TYPE=release electron-forge make",
     "postinstall": "node scripts/install-native-deps.js",

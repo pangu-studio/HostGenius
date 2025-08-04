@@ -25,7 +25,9 @@ const config: ForgeConfig = {
       },
     }),
     appBundleId: "studio.pangu.hostgenius",
-    asar: true,
+    asar: {
+      unpack: "**/{better-sqlite3,better-sqlite3.node}",
+    },
     name: "Host Genius",
     // extraResource: ["./node_modules/better-sqlite3"],
     icon: "./src/assets/icon/icon.icns",
@@ -33,24 +35,21 @@ const config: ForgeConfig = {
   rebuildConfig: {},
   hooks: {
     // The call to this hook is mandatory for better-sqlite3 to work once the app built
-    async packageAfterCopy(_forgeConfig, buildPath) {
+    async packageAfterCopy(_forgeConfig: any, buildPath: string) {
       const requiredNativePackages = [
         "better-sqlite3",
         "bindings",
         "file-uri-to-path",
       ];
-
       // __dirname isn't accessible from here
       const dirnamePath: string = ".";
       const sourceNodeModulesPath = resolve(dirnamePath, "node_modules");
       const destNodeModulesPath = resolve(buildPath, "node_modules");
-
       // Copy all required packages
       await Promise.all(
         [...requiredNativePackages].map(async (packageName) => {
           const sourcePath = join(sourceNodeModulesPath, packageName);
           const destPath = join(destNodeModulesPath, packageName);
-
           try {
             await mkdirs(dirname(destPath));
             await copy(sourcePath, destPath, {
@@ -61,7 +60,6 @@ const config: ForgeConfig = {
               `Failed to copy package ${packageName} from ${sourcePath} to ${destPath}`,
               error,
             );
-
             console.warn(
               `Optional package ${packageName} not found, skipping...`,
             );
