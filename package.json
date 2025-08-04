@@ -7,6 +7,7 @@
   "private": true,
   "scripts": {
     "start": "electron-forge start",
+    "rebuild": "electron-rebuild -f -w better-sqlite3",
     "package": "cross-env NODE_ENV=production BUILD_TYPE=release electron-forge package",
     "package:dev": "cross-env NODE_ENV=development electron-forge package",
     "package:test": "cross-env NODE_ENV=development BUILD_TYPE=test electron-forge package",

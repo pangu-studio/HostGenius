@@ -25,8 +25,10 @@ const config: ForgeConfig = {
       },
     }),
     appBundleId: "studio.pangu.hostgenius",
+    // asar: true,
     asar: {
-      unpack: "**/{better-sqlite3,better-sqlite3.node}",
+      unpack: "*.{node,dylib}", // Unpack native modules
+      unpackDir: "{better-sqlite3}", // Optionally specify a directory to unpack better-sqlite3
     },
     name: "Host Genius",
     // extraResource: ["./node_modules/better-sqlite3"],
@@ -121,6 +123,12 @@ const config: ForgeConfig = {
     ],
   }),
   plugins: [
+    {
+      name: "@electron-forge/plugin-auto-unpack-natives",
+      config: {
+        module: ["better-sqlite3"],
+      },
+    },
     new VitePlugin({
       build: [
         {
