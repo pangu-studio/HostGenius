@@ -27,7 +27,7 @@ const config: ForgeConfig = {
     appBundleId: "studio.pangu.hostgenius",
     asar: true,
     name: "Host Genius",
-    extraResource: ["./node_modules/better-sqlite3"],
+    // extraResource: ["./node_modules/better-sqlite3"],
     icon: "./src/assets/icon/icon.icns",
   },
   rebuildConfig: {},
