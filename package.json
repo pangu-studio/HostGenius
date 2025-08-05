@@ -1,13 +1,12 @@
 {
   "name": "host-genius",
   "productName": "Host Genius",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "description": "Host Genius - 智能 Hosts 文件管理工具",
   "main": ".vite/build/main.js",
   "private": true,
   "scripts": {
     "start": "electron-forge start",
-    "rebuild": "electron-rebuild -f -w better-sqlite3",
     "package": "cross-env NODE_ENV=production BUILD_TYPE=release electron-forge package",
     "package:dev": "cross-env NODE_ENV=development electron-forge package",
     "package:test": "cross-env NODE_ENV=development BUILD_TYPE=test electron-forge package",
