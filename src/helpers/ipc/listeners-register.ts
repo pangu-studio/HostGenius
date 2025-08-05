@@ -3,6 +3,7 @@ import { registerHostListeners } from "./host-listeners";
 import { registerSettingsListeners } from "./settings-listeners";
 import { addThemeEventListeners } from "./theme/theme-listeners";
 import { addWindowEventListeners } from "./window/window-listeners";
+import { registerAppListeners } from "./app-listeners";
 
 // 添加全局IPC监听器
 function addGlobalListeners() {
@@ -35,6 +36,7 @@ function addGlobalListeners() {
   }
 
   // 注册其他全局监听器
+  registerAppListeners();
   addThemeEventListeners();
   registerHostListeners();
   registerSettingsListeners();
