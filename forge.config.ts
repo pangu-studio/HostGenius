@@ -3,16 +3,12 @@ import { VitePlugin } from "@electron-forge/plugin-vite";
 import { MakerDeb } from "@electron-forge/maker-deb";
 import { FusesPlugin } from "@electron-forge/plugin-fuses";
 import { FuseV1Options, FuseVersion } from "@electron/fuses";
-import { resolve, join, dirname } from "path";
-import { copy, mkdirs } from "fs-extra";
 
 // 检查是否为生产构建
 const isProduction = process.env.NODE_ENV === "production";
 const isRelease = process.env.BUILD_TYPE === "release";
 const shouldSign = isProduction && isRelease;
-console.log(
-  `Production: ${isProduction}, Release: ${isRelease}, Should Sign: ${shouldSign}`,
-);
+
 const config: ForgeConfig = {
   packagerConfig: {
     // 只在生产发布时启用签名
@@ -25,51 +21,13 @@ const config: ForgeConfig = {
       },
     }),
     appBundleId: "studio.pangu.hostgenius",
-    // asar: true,
-    asar: {
-      unpack: "*.{node,dylib}", // Unpack native modules
-      unpackDir: "{better-sqlite3}", // Optionally specify a directory to unpack better-sqlite3
-    },
+    asar: true,
     name: "Host Genius",
-    // extraResource: ["./node_modules/better-sqlite3"],
     icon: "./src/assets/icon/icon.icns",
+    ignore: [/node_modules\/(?!(better-sqlite3|bindings|file-uri-to-path)\/)/],
   },
   rebuildConfig: {},
-  hooks: {
-    // The call to this hook is mandatory for better-sqlite3 to work once the app built
-    async packageAfterCopy(_forgeConfig: any, buildPath: string) {
-      const requiredNativePackages = [
-        "better-sqlite3",
-        "bindings",
-        "file-uri-to-path",
-      ];
-      // __dirname isn't accessible from here
-      const dirnamePath: string = ".";
-      const sourceNodeModulesPath = resolve(dirnamePath, "node_modules");
-      const destNodeModulesPath = resolve(buildPath, "node_modules");
-      // Copy all required packages
-      await Promise.all(
-        [...requiredNativePackages].map(async (packageName) => {
-          const sourcePath = join(sourceNodeModulesPath, packageName);
-          const destPath = join(destNodeModulesPath, packageName);
-          try {
-            await mkdirs(dirname(destPath));
-            await copy(sourcePath, destPath, {
-              preserveTimestamps: true,
-            });
-          } catch (error) {
-            console.error(
-              `Failed to copy package ${packageName} from ${sourcePath} to ${destPath}`,
-              error,
-            );
-            console.warn(
-              `Optional package ${packageName} not found, skipping...`,
-            );
-          }
-        }),
-      );
-    },
-  },
+  hooks: {},
   makers: [
     new MakerDeb({}),
     {
@@ -125,9 +83,7 @@ const config: ForgeConfig = {
   plugins: [
     {
       name: "@electron-forge/plugin-auto-unpack-natives",
-      config: {
-        module: ["better-sqlite3"],
-      },
+      config: {},
     },
     new VitePlugin({
       build: [

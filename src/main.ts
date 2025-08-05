@@ -1,4 +1,3 @@
-import { test } from "vitest";
 import { app, BrowserWindow, ipcMain } from "electron";
 import registerListeners from "./helpers/ipc/listeners-register";
 import path from "path";
@@ -8,46 +7,12 @@ import {
 } from "electron-devtools-installer";
 import { updateElectronApp, UpdateSourceType } from "update-electron-app";
 
-const inDevelopment = process.env.NODE_ENV === "development";
-const isTest = process.env.BUILD_TYPE === "test";
-
-ipcMain.handle("get-app-version", () => {
-  return app.getVersion();
-});
-
-// 添加开发环境检查
-ipcMain.handle("app:is-development", () => {
-  return inDevelopment;
-});
-
-// 添加平台信息
-ipcMain.handle("app:get-platform", () => {
-  return process.platform;
-});
-
-// 添加完整版本信息
-ipcMain.handle("app:get-version", () => {
-  const baseVersion = app.getVersion();
-  if (inDevelopment) {
-    return `${baseVersion}-dev`;
-  }
-  if (isTest) {
-    return `${baseVersion}-test`;
-  }
-  return baseVersion;
-});
-
-// 只在生产发布时启用自动更新
-// if (inDevelopment || !isRelease) {
-//   console.log("开发模式：跳过自动更新检查");
-// } else {
 updateElectronApp({
   updateSource: {
     type: UpdateSourceType.StaticStorage,
     baseUrl: `https://pangu-updater.oss-cn-hongkong.aliyuncs.com/host-genius/${process.platform}/${process.arch}`,
   },
 });
-// }
 
 // 设置应用名称，覆盖默认 "Electron"
 app.setName("Host Genius");
@@ -64,6 +29,7 @@ function setupGlobalListeners() {
   registerListeners(null); // 传入 null 表示全局注册
   globalListenersRegistered = true;
 }
+const inDevelopment = process.env.NODE_ENV === "development";
 
 function createWindow() {
   const preload = path.join(__dirname, "preload.js");
