@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -62,6 +62,11 @@ export function HostEditor({ group, onSave, onCancel }: HostEditorProps) {
   const [isBasicInfoOpen, setIsBasicInfoOpen] = useState(true);
   const [isFullscreen, setIsFullscreen] = useState(false);
 
+  // 新增：表格容器引用与滚动标记
+  const normalTableContainerRef = useRef<HTMLDivElement | null>(null);
+  const fullscreenTableContainerRef = useRef<HTMLDivElement | null>(null);
+  const shouldScrollOnAdd = useRef(false);
+
   useEffect(() => {
     console.log("编辑分组:", group);
     if (group) {
@@ -117,6 +122,8 @@ export function HostEditor({ group, onSave, onCancel }: HostEditorProps) {
       comment: "",
       enabled: true,
     };
+    // 修改：标记滚动时记录当前的全屏状态
+    shouldScrollOnAdd.current = activeTab === "table";
     handleEntriesChange([...entries, newEntry]);
   };
 
@@ -131,6 +138,35 @@ export function HostEditor({ group, onSave, onCancel }: HostEditorProps) {
     const newEntries = entries.filter((_, i) => i !== index);
     handleEntriesChange(newEntries);
   };
+
+  // 修改：entries 变化后，如果由添加触发且当前为表格视图，则滚动到底部
+  useEffect(() => {
+    if (shouldScrollOnAdd.current && activeTab === "table") {
+      // 延迟执行以确保 DOM 完全渲染和状态更新完成
+      setTimeout(() => {
+        const container = isFullscreen
+          ? fullscreenTableContainerRef.current
+          : normalTableContainerRef.current;
+        if (container) {
+          container.scrollTop = container.scrollHeight;
+          console.log(
+            "滚动到表格末尾:",
+            container.scrollHeight,
+            "当前模式:",
+            isFullscreen ? "全屏" : "普通",
+            "容器:",
+            container,
+          );
+        } else {
+          console.log(
+            "未找到容器引用，当前模式:",
+            isFullscreen ? "全屏" : "普通",
+          );
+        }
+        shouldScrollOnAdd.current = false;
+      }, 100);
+    }
+  }, [entries, activeTab, isFullscreen]);
 
   const handleSave = async () => {
     if (!formData.name.trim()) {
@@ -247,7 +283,14 @@ export function HostEditor({ group, onSave, onCancel }: HostEditorProps) {
               </Button>
             </div>
 
-            <div className="flex-1 overflow-auto rounded-md border">
+            <div
+              ref={fullscreenTableContainerRef}
+              className="scrollbar-thin scrollbar-track-gray-100 scrollbar-thumb-gray-300 hover:scrollbar-thumb-gray-400 max-h-[calc(100vh-300px)] min-h-0 flex-1 overflow-auto rounded-md border"
+              style={{
+                scrollbarWidth: "thin",
+                scrollbarColor: "#cbd5e0 #f7fafc",
+              }}
+            >
               <Table>
                 <TableHeader className="bg-background sticky top-0 z-10">
                   <TableRow>
@@ -498,7 +541,14 @@ export function HostEditor({ group, onSave, onCancel }: HostEditorProps) {
                     </Button>
                   </div>
 
-                  <div className="max-h-[400px] overflow-auto rounded-md border">
+                  <div
+                    ref={normalTableContainerRef}
+                    className="scrollbar-thin scrollbar-track-gray-100 scrollbar-thumb-gray-300 hover:scrollbar-thumb-gray-400 max-h-[400px] overflow-auto rounded-md border"
+                    style={{
+                      scrollbarWidth: "thin",
+                      scrollbarColor: "#cbd5e0 #f7fafc",
+                    }}
+                  >
                     <Table>
                       <TableHeader className="bg-background sticky top-0 z-10">
                         <TableRow>
