@@ -1,7 +1,7 @@
 {
   "name": "host-genius",
   "productName": "Host Genius",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "description": "Host Genius - 您专属的主机管理智能助理",
   "main": ".vite/build/main.js",
   "private": true,
