@@ -106,6 +106,10 @@ const initializeI18n = async () => {
             // 新增翻译条目
             groupEnabled: 'Group "{{name}}" enabled',
             groupDisabled: 'Group "{{name}}" disabled',
+            groupEnabledAndApplied:
+              'Group "{{name}}" enabled and applied to system',
+            groupDisabledAndApplied:
+              'Group "{{name}}" disabled and applied to system',
             toggleGroupError: "Failed to toggle group status",
             groupDeleted: 'Group "{{name}}" deleted',
             deleteGroupError: "Failed to delete group",
@@ -272,6 +276,8 @@ const initializeI18n = async () => {
             // 新增翻译条目
             groupEnabled: '分组 "{{name}}" 已启用',
             groupDisabled: '分组 "{{name}}" 已禁用',
+            groupEnabledAndApplied: '分组 "{{name}}" 已启用并应用到系统',
+            groupDisabledAndApplied: '分组 "{{name}}" 已禁用并应用到系统',
             toggleGroupError: "切换分组状态失败",
             groupDeleted: '分组 "{{name}}" 已删除',
             deleteGroupError: "无法删除分组，请重试",
@@ -438,6 +444,10 @@ const initializeI18n = async () => {
             // 新增翻译条目
             groupEnabled: 'Group "{{name}}" enabled',
             groupDisabled: 'Group "{{name}}" disabled',
+            groupEnabledAndApplied:
+              'Grupo "{{name}}" habilitado e aplicado ao sistema',
+            groupDisabledAndApplied:
+              'Grupo "{{name}}" desabilitado e aplicado ao sistema',
             toggleGroupError: "Failed to toggle group status",
             groupDeleted: 'Group "{{name}}" deleted',
             deleteGroupError: "Failed to delete group",
@@ -602,6 +612,10 @@ const initializeI18n = async () => {
             // 新增翻译条目
             groupEnabled: 'Group "{{name}}" enabled',
             groupDisabled: 'Group "{{name}}" disabled',
+            groupEnabledAndApplied:
+              'グループ "{{name}}" を有効にしてシステムに適用しました',
+            groupDisabledAndApplied:
+              'グループ "{{name}}" を無効にしてシステムに適用しました',
             toggleGroupError: "Failed to toggle group status",
             groupDeleted: 'Group "{{name}}" deleted',
             deleteGroupError: "Failed to delete group",
@@ -763,6 +777,10 @@ const initializeI18n = async () => {
             // 新增翻译条目
             groupEnabled: 'Group "{{name}}" enabled',
             groupDisabled: 'Group "{{name}}" disabled',
+            groupEnabledAndApplied:
+              '그룹 "{{name}}"이 활성화되어 시스템에 적용되었습니다',
+            groupDisabledAndApplied:
+              '그룹 "{{name}}"이 비활성화되어 시스템에 적용되었습니다',
             toggleGroupError: "Failed to toggle group status",
             groupDeleted: 'Group "{{name}}" deleted',
             deleteGroupError: "Failed to delete group",
