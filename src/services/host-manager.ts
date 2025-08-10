@@ -422,7 +422,7 @@ export class HostManagerService {
     const systemGroup = databaseService.getGroupByName("系统Hosts");
     const otherGroups = databaseService
       .getAllGroups()
-      .filter((g) => !g.isSystem);
+      .filter((g) => !g.isSystem && g.enabled); // 只包含启用的分组
 
     const sections: string[] = [];
 
@@ -437,7 +437,7 @@ export class HostManagerService {
 
       for (const group of otherGroups) {
         if (group.content.trim()) {
-          const statusSuffix = group.enabled ? " [enabled]" : " [disabled]";
+          const statusSuffix = " [enabled]"; // 由于已经过滤了启用的分组，这里都是enabled
           sections.push(`# --- ${group.name}${statusSuffix} ---`);
           if (group.description) {
             sections.push(`# Description: ${group.description}`);

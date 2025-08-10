@@ -57,10 +57,16 @@ export function HostGroupList({
   const handleToggleGroup = async (group: HostGroup) => {
     try {
       await toggleGroup(group.id);
+      await applyHosts();
       toast.success(
-        t(group.enabled ? "hosts.groupDisabled" : "hosts.groupEnabled", {
-          name: group.name,
-        }),
+        t(
+          group.enabled
+            ? "hosts.groupDisabledAndApplied"
+            : "hosts.groupEnabledAndApplied",
+          {
+            name: group.name,
+          },
+        ),
       );
     } catch (error) {
       toast.error(t("hosts.toggleGroupError"));

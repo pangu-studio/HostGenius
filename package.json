@@ -1,12 +1,12 @@
 {
   "name": "host-genius",
   "productName": "Host Genius",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "description": "Host Genius - 您专属的主机管理智能助理",
   "main": ".vite/build/main.js",
   "private": true,
   "scripts": {
-    "start": "electron-forge start",
+    "start": "cross-env NODE_ENV=development electron-forge start",
     "package": "cross-env NODE_ENV=production BUILD_TYPE=release electron-forge package",
     "package:dev": "cross-env NODE_ENV=development electron-forge package",
     "package:test": "cross-env NODE_ENV=development BUILD_TYPE=test electron-forge package",
