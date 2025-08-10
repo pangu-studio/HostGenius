@@ -100,7 +100,14 @@ app.whenReady().then(() => {
   createWindow();
 
   if (inDevelopment) {
-    installExtensions();
+    console.log("Development mode: installing extensions");
+    installExtensions()
+      .then(() => {
+        console.log("Extensions installed successfully");
+      })
+      .catch((error) => {
+        console.error("Failed to install extensions:", error);
+      });
   }
 });
 
