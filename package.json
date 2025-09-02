@@ -116,7 +116,7 @@
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
     "react-hook-form": "^7.60.0",
-    "react-i18next": "^15.5.1",
+    "react-i18next": "^15.7.3",
     "sonner": "^2.0.7",
     "sudo-prompt": "^9.2.1",
     "tailwind-merge": "^3.3.1",
